@@ -2,7 +2,7 @@ package com.darkblade.rpc.core.zookeeper;
 
 import com.darkblade.rpc.common.constant.ZookeeperConstant;
 import com.darkblade.rpc.core.config.ZookeeperProperties;
-import com.darkblade.rpc.core.registry.ServiceManager;
+import com.darkblade.rpc.core.server.ServiceManager;
 import com.darkblade.rpc.core.exception.RemoteServerException;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;

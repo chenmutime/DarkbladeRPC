@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 @Inherited
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface NrpcClient {
+public @interface RpcClient {
 
     String serviceName();
 

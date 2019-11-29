@@ -1,4 +1,4 @@
-package com.darkblade.rpc.core.future;
+package com.darkblade.rpc.core.context;
 
 import com.darkblade.rpc.common.dto.NrpcResponse;
 
@@ -7,7 +7,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 
-public class RpcFuture implements Future<Object> {
+public class RpcContext implements Future<Object> {
 
     private InetSocketAddress inetSocketAddress;
     private Sync sync;
@@ -18,7 +18,7 @@ public class RpcFuture implements Future<Object> {
         return serviceName;
     }
 
-    public RpcFuture(String serviceName, InetSocketAddress inetSocketAddress) {
+    public RpcContext(String serviceName, InetSocketAddress inetSocketAddress) {
         this.sync = new Sync();
         this.serviceName = serviceName;
         this.inetSocketAddress = inetSocketAddress;

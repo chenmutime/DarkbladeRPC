@@ -1,12 +1,12 @@
-package com.darkblade.rpc.core.proxy;
+package com.darkblade.rpc.core.invoker;
 
 import com.darkblade.rpc.common.constant.StatusCodeConstant;
 import com.darkblade.rpc.common.dto.NrpcRequest;
 import com.darkblade.rpc.common.dto.NrpcResponse;
-import com.darkblade.rpc.core.annotation.NrpcClient;
-import com.darkblade.rpc.core.registry.ServiceManager;
+import com.darkblade.rpc.core.annotation.RpcClient;
+import com.darkblade.rpc.core.server.ServiceManager;
 import com.darkblade.rpc.core.exception.RemoteServerException;
-import com.darkblade.rpc.core.future.RpcFuture;
+import com.darkblade.rpc.core.context.RpcContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,8 +27,8 @@ public class ObjectProxy implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        if (interfaceClass.isAnnotationPresent(NrpcClient.class)) {
-            NrpcClient annotation = interfaceClass.getAnnotation(NrpcClient.class);
+        if (interfaceClass.isAnnotationPresent(RpcClient.class)) {
+            RpcClient annotation = interfaceClass.getAnnotation(RpcClient.class);
             logger.info("执行同步发送请求:{}", annotation.serviceName());
             NrpcRequest nrpcRequest = createRequest(method, args);
             NrpcResponse nrpcResponse = executeRequest(1, annotation, nrpcRequest);
@@ -37,12 +37,12 @@ public class ObjectProxy implements InvocationHandler {
         return null;
     }
 
-    private NrpcResponse executeRequest(int currRetries, NrpcClient annotation, NrpcRequest nrpcRequest) throws Exception {
+    private NrpcResponse executeRequest(int currRetries, RpcClient annotation, NrpcRequest nrpcRequest) throws Exception {
         int retries = annotation.retries();
-        Optional<RpcFuture> rpcFutureOptional = ServiceManager.sendRequest(annotation.serviceName(), nrpcRequest);
+        Optional<RpcContext> rpcFutureOptional = ServiceManager.sendRequest(annotation.serviceName(), nrpcRequest);
         if(rpcFutureOptional.isPresent()) {
-            RpcFuture rpcFuture = rpcFutureOptional.get();
-            NrpcResponse response = rpcFuture.get(annotation.timeout(), annotation.timeUnit());
+            RpcContext rpcContext = rpcFutureOptional.get();
+            NrpcResponse response = rpcContext.get(annotation.timeout(), annotation.timeUnit());
             if (null == response) {
                 if (currRetries < retries) {
                     logger.info("重试请求服务端");

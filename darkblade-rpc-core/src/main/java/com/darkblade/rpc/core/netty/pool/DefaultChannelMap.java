@@ -1,7 +1,6 @@
-package com.darkblade.rpc.core.pool;
+package com.darkblade.rpc.core.netty.pool;
 
-import com.darkblade.rpc.core.config.ZookeeperProperties;
-import com.darkblade.rpc.core.handler.DefaultChannelPoolHandler;
+import com.darkblade.rpc.core.netty.handler.DefaultChannelPoolHandler;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
@@ -18,12 +17,6 @@ public class DefaultChannelMap extends AbstractChannelPoolMap<InetSocketAddress,
     private final ConcurrentMap<InetSocketAddress, AbstractChannelPoolHandler> handlerMap = new ConcurrentHashMap<>();
 
     private EventLoopGroup eventLoopGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors() << 1);
-
-    private ZookeeperProperties zookeeperProperties;
-
-    public DefaultChannelMap(ZookeeperProperties zookeeperProperties) {
-        this.zookeeperProperties = zookeeperProperties;
-    }
 
     @Override
     protected ChannelPool newPool(InetSocketAddress inetAddr) {
@@ -42,7 +35,7 @@ public class DefaultChannelMap extends AbstractChannelPoolMap<InetSocketAddress,
             channelPoolHandler = new DefaultChannelPoolHandler();
         }
 //    使用FixedChannelPool，超过最大连接数的会进入等待任务队列；使用SimpleChannelPool，不会有限制，一旦发现池中没有可用连接，则会直接试图去创建一个
-        SimpleChannelPool pool = new FixedChannelPool(bootstrap, channelPoolHandler, zookeeperProperties.getPoolMaxSize());
+        SimpleChannelPool pool = new FixedChannelPool(bootstrap, channelPoolHandler, 100);
         return pool;
     }
 }

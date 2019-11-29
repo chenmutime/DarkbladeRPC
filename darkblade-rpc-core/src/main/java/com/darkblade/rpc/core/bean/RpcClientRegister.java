@@ -1,9 +1,9 @@
-package com.darkblade.rpc.core.registry;
+package com.darkblade.rpc.core.bean;
 
-import com.darkblade.rpc.core.annotation.NrpcClient;
-import com.darkblade.rpc.core.annotation.NrpcClients;
-import com.darkblade.rpc.core.proxy.ObjectProxy;
-import com.darkblade.rpc.core.proxy.ProxyBuidler;
+import com.darkblade.rpc.core.annotation.RpcClient;
+import com.darkblade.rpc.core.annotation.RpcClients;
+import com.darkblade.rpc.core.invoker.ObjectProxy;
+import com.darkblade.rpc.core.invoker.ProxyBuidler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -26,7 +26,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-public class ClientRegistrar implements ImportBeanDefinitionRegistrar, BeanFactoryAware, EnvironmentAware {
+/**
+ * 重新生成客户端调用类的代理类并注册到BeanFactory
+ */
+public class RpcClientRegister implements ImportBeanDefinitionRegistrar, BeanFactoryAware, EnvironmentAware {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -43,10 +46,10 @@ public class ClientRegistrar implements ImportBeanDefinitionRegistrar, BeanFacto
     public void registerBeanDefinitions(AnnotationMetadata metadata, BeanDefinitionRegistry registry) {
         logger.info("正在扫描注解了NrpcClient的类");
         ClassPathScanningCandidateComponentProvider scanner = this.getScanner();
-        Map<String, Object> attrs = metadata.getAnnotationAttributes(NrpcClients.class.getName(), true);
+        Map<String, Object> attrs = metadata.getAnnotationAttributes(RpcClients.class.getName(), true);
         String besePackage = (String) attrs.get("basePackage");
 //        添加只抓取注释了NrpcClient的过滤器
-        AnnotationTypeFilter annotationTypeFilter = new AnnotationTypeFilter(NrpcClient.class);
+        AnnotationTypeFilter annotationTypeFilter = new AnnotationTypeFilter(RpcClient.class);
         scanner.addIncludeFilter(annotationTypeFilter);
 //          抓取所有注解了@ComPonent的类
         Set<BeanDefinition> candidateComponents = scanner.findCandidateComponents(besePackage);

@@ -1,11 +1,10 @@
-package com.darkblade.rpc.core.registry;
+package com.darkblade.rpc.core.server;
 
 import com.darkblade.rpc.common.dto.NrpcRequest;
-import com.darkblade.rpc.core.config.ZookeeperProperties;
 import com.darkblade.rpc.core.exception.RemoteServerException;
-import com.darkblade.rpc.core.future.RpcFuture;
-import com.darkblade.rpc.core.handler.NettyClientHandler;
-import com.darkblade.rpc.core.pool.DefaultChannelMap;
+import com.darkblade.rpc.core.context.RpcContext;
+import com.darkblade.rpc.core.netty.handler.NettyClientHandler;
+import com.darkblade.rpc.core.netty.pool.DefaultChannelMap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.pool.AbstractChannelPoolMap;
@@ -25,6 +24,9 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+/**
+ * 保存来自服务端的metadata信息
+ */
 public class ServiceManager {
 
     //    服务列表
@@ -96,11 +98,11 @@ public class ServiceManager {
         }
     }
 
-    public void initalizeChannelFactory(ZookeeperProperties zookeeperProperties) {
+    public void initalizeChannelFactory() {
         if (null == defaultChannelMap) {
             synchronized (ServiceManager.class) {
                 if (defaultChannelMap == null) {
-                    this.defaultChannelMap = new DefaultChannelMap(zookeeperProperties);
+                    this.defaultChannelMap = new DefaultChannelMap();
                 }
             }
         }
@@ -112,7 +114,7 @@ public class ServiceManager {
         }
     }
 
-    private Optional<RpcFuture> createRpcFutrue(String serviceName) throws Exception {
+    private Optional<RpcContext> createRpcContext(String serviceName) throws Exception {
         readLock.lock();
         try {
             List<InetSocketAddress> serviceList = SOCKET_ADDRESS_CONCURRENT_MAP.get(serviceName);
@@ -122,8 +124,8 @@ public class ServiceManager {
             int serviceIndex = (int) Thread.currentThread().getId() % serviceList.size();
             InetSocketAddress inetSocketAddress = serviceList.get(serviceIndex);
             if (null != inetSocketAddress) {
-                RpcFuture rpcFuture = new RpcFuture(serviceName, inetSocketAddress);
-                return Optional.of(rpcFuture);
+                RpcContext rpcContext = new RpcContext(serviceName, inetSocketAddress);
+                return Optional.of(rpcContext);
             }
         } finally {
             readLock.unlock();
@@ -131,28 +133,28 @@ public class ServiceManager {
         return Optional.empty();
     }
 
-    private ChannelPool getChannelPool(RpcFuture rpcFuture){
-        return defaultChannelMap.get(rpcFuture.getInetSocketAddress());
+    private ChannelPool getChannelPool(RpcContext rpcContext){
+        return defaultChannelMap.get(rpcContext.getInetSocketAddress());
     }
 
-    public void releaseChannel(RpcFuture rpcFuture, Channel channel) {
+    public void releaseChannel(RpcContext rpcContext, Channel channel) {
 //        需要找到对应具体服务端的inetAddr才能获取ChannelPool
-        ChannelPool channelPool = defaultChannelMap.get(rpcFuture.getInetSocketAddress());
+        ChannelPool channelPool = defaultChannelMap.get(rpcContext.getInetSocketAddress());
         channelPool.release(channel);
     }
 
-    public static Optional<RpcFuture>  sendRequest(String serviceName, NrpcRequest nrpcRequest) throws Exception {
-        Optional<RpcFuture> rpcFutureOptional = ServiceManager.getInstance().createRpcFutrue(serviceName);
+    public static Optional<RpcContext>  sendRequest(String serviceName, NrpcRequest nrpcRequest) throws Exception {
+        Optional<RpcContext> rpcFutureOptional = ServiceManager.getInstance().createRpcContext(serviceName);
         if (rpcFutureOptional.isPresent()) {
-            RpcFuture rpcFuture = rpcFutureOptional.get();
+            RpcContext rpcContext = rpcFutureOptional.get();
             CountDownLatch countDownLatch = new CountDownLatch(1);
 
-            ChannelPool channelPool = getInstance().getChannelPool(rpcFuture);
+            ChannelPool channelPool = getInstance().getChannelPool(rpcContext);
             Future<Channel> future = channelPool.acquire();
             Channel channel = future.get();
             if (null != channel) {
                 NettyClientHandler nettyClientHandler = channel.pipeline().get(NettyClientHandler.class);
-                nettyClientHandler.saveRpcFuture(nrpcRequest.getRequestId(), rpcFuture);
+                nettyClientHandler.saveRpcFuture(nrpcRequest.getRequestId(), rpcContext);
                 ChannelFuture channelFuture = channel.writeAndFlush(nrpcRequest);
                 channelFuture.addListener(new GenericFutureListener<Future<? super Void>>() {
                     @Override
@@ -162,7 +164,7 @@ public class ServiceManager {
                 });
                 countDownLatch.await();
             }
-            return Optional.of(rpcFuture);
+            return Optional.of(rpcContext);
         }
         return Optional.empty();
     }

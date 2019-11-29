@@ -1,4 +1,4 @@
-package com.darkblade.rpc.core.proxy;
+package com.darkblade.rpc.core.invoker;
 
 import java.lang.reflect.Proxy;
 import java.util.Optional;
