@@ -1,6 +1,6 @@
 package com.darkblade.rpc.core.config;
 
-import com.darkblade.rpc.core.registry.NrpcClientBootstrap;
+import com.darkblade.rpc.core.registry.ClientBootstrap;
 import com.darkblade.rpc.core.zookeeper.ZkServerDiscovery;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -24,9 +24,9 @@ public class AutoConfiguration {
     }
 
     @Bean
-    public NrpcClientBootstrap nrpcClientBootstrap(ZookeeperProperties zookeeperProperties){
-        NrpcClientBootstrap nrpcClientBootstrap = new NrpcClientBootstrap(zookeeperProperties);
-        return nrpcClientBootstrap;
+    public ClientBootstrap nrpcClientBootstrap(ZookeeperProperties zookeeperProperties){
+        ClientBootstrap clientBootstrap = new ClientBootstrap(zookeeperProperties);
+        return clientBootstrap;
     }
 
 }

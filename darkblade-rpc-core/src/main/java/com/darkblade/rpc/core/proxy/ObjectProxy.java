@@ -4,7 +4,7 @@ import com.darkblade.rpc.common.constant.StatusCodeConstant;
 import com.darkblade.rpc.common.dto.NrpcRequest;
 import com.darkblade.rpc.common.dto.NrpcResponse;
 import com.darkblade.rpc.core.annotation.NrpcClient;
-import com.darkblade.rpc.core.registry.NrpcServiceManager;
+import com.darkblade.rpc.core.registry.ServiceManager;
 import com.darkblade.rpc.core.exception.RemoteServerException;
 import com.darkblade.rpc.core.future.RpcFuture;
 import org.slf4j.Logger;
@@ -39,7 +39,7 @@ public class ObjectProxy implements InvocationHandler {
 
     private NrpcResponse executeRequest(int currRetries, NrpcClient annotation, NrpcRequest nrpcRequest) throws Exception {
         int retries = annotation.retries();
-        Optional<RpcFuture> rpcFutureOptional = NrpcServiceManager.sendRequest(annotation.serviceName(), nrpcRequest);
+        Optional<RpcFuture> rpcFutureOptional = ServiceManager.sendRequest(annotation.serviceName(), nrpcRequest);
         if(rpcFutureOptional.isPresent()) {
             RpcFuture rpcFuture = rpcFutureOptional.get();
             NrpcResponse response = rpcFuture.get(annotation.timeout(), annotation.timeUnit());

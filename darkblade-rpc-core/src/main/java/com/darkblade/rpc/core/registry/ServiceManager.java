@@ -25,7 +25,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class NrpcServiceManager {
+public class ServiceManager {
 
     //    服务列表
     private final List<String> SERVER_LIST = new ArrayList<>();
@@ -35,17 +35,17 @@ public class NrpcServiceManager {
     private volatile AbstractChannelPoolMap defaultChannelMap;
 
     //    添加volatile为了禁止重排序，防止多线程修改nrpcServiceManager出错
-    private volatile static NrpcServiceManager nrpcServiceManager;
+    private volatile static ServiceManager serviceManager;
 
-    public static NrpcServiceManager getInstance() {
-        if (null == nrpcServiceManager) {
-            synchronized (NrpcServiceManager.class) {
-                if (nrpcServiceManager == null) {
-                    nrpcServiceManager = new NrpcServiceManager();
+    public static ServiceManager getInstance() {
+        if (null == serviceManager) {
+            synchronized (ServiceManager.class) {
+                if (serviceManager == null) {
+                    serviceManager = new ServiceManager();
                 }
             }
         }
-        return nrpcServiceManager;
+        return serviceManager;
     }
 
     public AbstractChannelPoolMap getDefaultChannelMap() {
@@ -98,7 +98,7 @@ public class NrpcServiceManager {
 
     public void initalizeChannelFactory(ZookeeperProperties zookeeperProperties) {
         if (null == defaultChannelMap) {
-            synchronized (NrpcServiceManager.class) {
+            synchronized (ServiceManager.class) {
                 if (defaultChannelMap == null) {
                     this.defaultChannelMap = new DefaultChannelMap(zookeeperProperties);
                 }
@@ -142,7 +142,7 @@ public class NrpcServiceManager {
     }
 
     public static Optional<RpcFuture>  sendRequest(String serviceName, NrpcRequest nrpcRequest) throws Exception {
-        Optional<RpcFuture> rpcFutureOptional = NrpcServiceManager.getInstance().createRpcFutrue(serviceName);
+        Optional<RpcFuture> rpcFutureOptional = ServiceManager.getInstance().createRpcFutrue(serviceName);
         if (rpcFutureOptional.isPresent()) {
             RpcFuture rpcFuture = rpcFutureOptional.get();
             CountDownLatch countDownLatch = new CountDownLatch(1);

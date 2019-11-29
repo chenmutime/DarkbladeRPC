@@ -2,7 +2,7 @@ package com.darkblade.rpc.core.zookeeper;
 
 import com.darkblade.rpc.common.constant.ZookeeperConstant;
 import com.darkblade.rpc.core.config.ZookeeperProperties;
-import com.darkblade.rpc.core.registry.NrpcServiceManager;
+import com.darkblade.rpc.core.registry.ServiceManager;
 import com.darkblade.rpc.core.exception.RemoteServerException;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
@@ -51,7 +51,7 @@ public class ZkServerDiscovery {
                 String serverAddress = new String(serverAddressByte);
                 serverList.add(serverAddress);
             }
-            NrpcServiceManager.getInstance().updateConnectServer(serverList);
+            ServiceManager.getInstance().updateConnectServer(serverList);
         } catch (KeeperException e) {
             logger.error(e.getMessage());
         } catch (InterruptedException e) {

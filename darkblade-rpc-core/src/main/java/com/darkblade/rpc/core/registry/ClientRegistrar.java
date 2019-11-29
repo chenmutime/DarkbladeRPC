@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-public class NrpcClientRegistrar implements ImportBeanDefinitionRegistrar, BeanFactoryAware, EnvironmentAware {
+public class ClientRegistrar implements ImportBeanDefinitionRegistrar, BeanFactoryAware, EnvironmentAware {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
