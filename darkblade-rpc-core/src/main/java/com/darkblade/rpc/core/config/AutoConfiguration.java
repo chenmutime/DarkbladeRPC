@@ -11,15 +11,5 @@ import org.springframework.context.annotation.Configuration;
 @ComponentScan(basePackages = {"com.darkblade.rpc.core"})
 public class AutoConfiguration {
 
-    /**
-     * 服务发现必须先于nrpcClientBootstrap启动，因此放在前面
-     * @param zookeeperProperties
-     * @return
-     */
-    @Bean
-    public ZkServerDiscovery nrpcServerDiscovery(ZookeeperProperties zookeeperProperties){
-        ZkServerDiscovery zkServerDiscovery = new ZkServerDiscovery(zookeeperProperties);
-        return zkServerDiscovery;
-    }
 
 }

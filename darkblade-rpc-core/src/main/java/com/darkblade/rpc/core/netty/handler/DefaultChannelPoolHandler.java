@@ -10,7 +10,6 @@ import io.netty.channel.pool.AbstractChannelPoolHandler;
 
 public class DefaultChannelPoolHandler extends AbstractChannelPoolHandler {
 
-
     @Override
     public void channelCreated(Channel channel) throws Exception {
         ChannelPipeline channelPipeline = channel.pipeline();

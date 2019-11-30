@@ -64,7 +64,7 @@ public class ZkServerDiscovery {
     private ZooKeeper connectZookeeper() {
         ZooKeeper zookeeper = null;
         try {
-            zookeeper = new ZooKeeper(zookeeperProperties.getZookeeper().getHost(), zookeeperProperties.getZookeeper().getSessionTimeout(), new Watcher() {
+            zookeeper = new ZooKeeper(zookeeperProperties.getHost(), zookeeperProperties.getSessionTimeout(), new Watcher() {
                 @Override
                 public void process(WatchedEvent watchedEvent) {
                     logger.info("服务已建立");
