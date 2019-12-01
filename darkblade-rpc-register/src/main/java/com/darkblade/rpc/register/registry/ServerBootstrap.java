@@ -9,7 +9,7 @@ import com.darkblade.rpc.register.config.RpcProperties;
 import com.darkblade.rpc.register.filter.RpcFilter;
 import com.darkblade.rpc.register.handler.NettyServerHandler;
 import com.darkblade.rpc.register.limiter.RateLimiterHelper;
-import com.darkblade.rpc.register.zookeeper.ZkServerRegister;
+import com.darkblade.rpc.register.registry.zookeeper.ZkServerRegister;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;

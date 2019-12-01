@@ -1,4 +1,4 @@
-package com.darkblade.rpc.register.zookeeper;
+package com.darkblade.rpc.register.registry.zookeeper;
 
 import com.darkblade.rpc.common.constant.ZookeeperConstant;
 import com.darkblade.rpc.register.config.RpcProperties;
