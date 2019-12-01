@@ -6,7 +6,7 @@ public class ServerManager {
 
     private final static ConcurrentMap<String, Object> BEAN_MAP = new ConcurrentHashMap<>();
 
-    public static ConcurrentMap<String, Object> getBeanMap(){
+    public static ConcurrentMap<String, Object> getBeanMap() {
         return BEAN_MAP;
     }
 
@@ -16,8 +16,9 @@ public class ServerManager {
         if (poolExecutor == null) {
             synchronized (ServerManager.class) {
                 if (poolExecutor == null) {
-                    poolExecutor = new ThreadPoolExecutor(16, 16, 600L
-                            , TimeUnit.SECONDS, new ArrayBlockingQueue<>(655536));
+                    int poolSzie = Runtime.getRuntime().availableProcessors();
+                    poolExecutor = new ThreadPoolExecutor(poolSzie, poolSzie, 6000L
+                            , TimeUnit.SECONDS, new ArrayBlockingQueue<>(Integer.MAX_VALUE));
                 }
             }
         }

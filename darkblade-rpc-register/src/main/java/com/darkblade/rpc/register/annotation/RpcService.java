@@ -10,8 +10,8 @@ import java.lang.annotation.Target;
 @Component
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Filter {
+public @interface RpcService {
 
-
-
+//   this is an interface
+    Class<?> value();
 }

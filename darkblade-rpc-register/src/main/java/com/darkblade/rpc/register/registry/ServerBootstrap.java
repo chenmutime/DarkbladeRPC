@@ -4,10 +4,9 @@ import com.darkblade.rpc.common.dto.NrpcRequest;
 import com.darkblade.rpc.common.dto.NrpcResponse;
 import com.darkblade.rpc.common.serializer.RpcDecoder;
 import com.darkblade.rpc.common.serializer.RpcEncoder;
-import com.darkblade.rpc.register.annotation.Filter;
-import com.darkblade.rpc.register.annotation.NrpcService;
+import com.darkblade.rpc.register.annotation.RpcService;
 import com.darkblade.rpc.register.config.RpcProperties;
-import com.darkblade.rpc.register.filter.RequestFilter;
+import com.darkblade.rpc.register.filter.RpcFilter;
 import com.darkblade.rpc.register.handler.NettyServerHandler;
 import com.darkblade.rpc.register.limiter.RateLimiterHelper;
 import com.darkblade.rpc.register.zookeeper.ZkServerRegister;
@@ -24,6 +23,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.stereotype.Component;
 import org.springframework.util.SystemPropertyUtils;
 
 import java.util.ArrayList;
@@ -31,12 +31,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+@Component
 public class ServerBootstrap implements ApplicationContextAware, InitializingBean {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private RpcProperties rpcProperties;
-    private List<RequestFilter> requestFilterList;
+    private List<RpcFilter> rpcFilterList;
 
     public ServerBootstrap(RpcProperties rpcProperties) {
         this.rpcProperties = rpcProperties;
@@ -48,8 +49,8 @@ public class ServerBootstrap implements ApplicationContextAware, InitializingBea
 
         register();
         try {
-            loadAllNrpcServices(ctx);
-            loadAllNrpcFilters(ctx);
+            loadAllRpcServices(ctx);
+            loadAllRpcFilters(ctx);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -75,17 +76,16 @@ public class ServerBootstrap implements ApplicationContextAware, InitializingBea
      * @param ctx
      * @throws Exception
      */
-    private synchronized void loadAllNrpcFilters(ApplicationContext ctx) throws Exception {
+    private synchronized void loadAllRpcFilters(ApplicationContext ctx) throws Exception {
         logger.info("Scanning filters...");
-        Map<String, Object> filterMap = ctx.getBeansWithAnnotation(Filter.class);
-        List<RequestFilter> internalList = new ArrayList<>();
-        for (Object obj : filterMap.values()) {
-            if (obj instanceof RequestFilter) {
-                internalList.add((RequestFilter) obj);
-            }
+        String[] filters = ctx.getBeanNamesForType(RpcFilter.class);
+        List<RpcFilter> filterList = new ArrayList<>();
+        for (String filter : filters) {
+            RpcFilter rpcFilter = (RpcFilter) Class.forName(filter).newInstance();
+            filterList.add(rpcFilter);
         }
-        if (null == requestFilterList) {
-            requestFilterList = new CopyOnWriteArrayList(internalList);
+        if (null == rpcFilterList) {
+            rpcFilterList = new CopyOnWriteArrayList(filterList);
         }
 
     }
@@ -96,11 +96,11 @@ public class ServerBootstrap implements ApplicationContextAware, InitializingBea
      * @param ctx
      * @throws Exception
      */
-    private synchronized void loadAllNrpcServices(ApplicationContext ctx) throws Exception {
+    private synchronized void loadAllRpcServices(ApplicationContext ctx) throws Exception {
         logger.info("Scanning NrpcServices...");
-        Map<String, Object> beanMap = ctx.getBeansWithAnnotation(NrpcService.class);
+        Map<String, Object> beanMap = ctx.getBeansWithAnnotation(RpcService.class);
         for (Object obj : beanMap.values()) {
-            String interfaceName = obj.getClass().getAnnotation(NrpcService.class).value().getSimpleName();
+            String interfaceName = obj.getClass().getAnnotation(RpcService.class).value().getSimpleName();
             if (ServerManager.getBeanMap().containsKey(interfaceName)) {
                 throw new Exception("Classes with duplicates：" + interfaceName);
             }
@@ -123,7 +123,7 @@ public class ServerBootstrap implements ApplicationContextAware, InitializingBea
                 public void initChannel(SocketChannel ch) throws Exception {
                     ch.pipeline().addLast(new RpcDecoder(NrpcRequest.class));
                     ch.pipeline().addLast(new RpcEncoder(NrpcResponse.class));
-                    ch.pipeline().addLast(new NettyServerHandler(requestFilterList));
+                    ch.pipeline().addLast(new NettyServerHandler(rpcFilterList));
                 }
             });
             logger.info("binded port : {}", rpcProperties.getPort());

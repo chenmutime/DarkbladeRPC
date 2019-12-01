@@ -2,17 +2,15 @@ package com.darkblade.rpc.register.filter;
 
 
 import com.darkblade.rpc.common.dto.NrpcRequest;
-import com.darkblade.rpc.register.annotation.Filter;
-import com.darkblade.rpc.register.exception.FilterException;
+import com.darkblade.rpc.register.exception.RpcFilterException;
 import com.darkblade.rpc.register.limiter.RateLimiterHelper;
 
-@Filter
-public class RequestLimitFilter implements RequestFilter {
+public class RequestLimitFilter implements RpcFilter {
 
     @Override
-    public void doFilter(NrpcRequest nrpcRequest) throws FilterException {
+    public void doFilter(NrpcRequest nrpcRequest) throws RpcFilterException {
         if(!RateLimiterHelper.tryAcquire()){
-            throw new FilterException("已超过最大请求数");
+            throw new RpcFilterException("已超过最大请求数");
         }
     }
 

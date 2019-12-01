@@ -4,8 +4,8 @@ import com.darkblade.rpc.common.constant.StatusCodeConstant;
 import com.darkblade.rpc.common.dto.NrpcRequest;
 import com.darkblade.rpc.common.dto.NrpcResponse;
 import com.darkblade.rpc.register.registry.ServerManager;
-import com.darkblade.rpc.register.exception.FilterException;
-import com.darkblade.rpc.register.filter.RequestFilter;
+import com.darkblade.rpc.register.exception.RpcFilterException;
+import com.darkblade.rpc.register.filter.RpcFilter;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -22,20 +22,20 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<NrpcRequest>
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private List<RequestFilter> requestFilterList;
+    private List<RpcFilter> rpcFilterList;
 
-    public NettyServerHandler(List<RequestFilter> requestFilterList) {
-        this.requestFilterList = requestFilterList;
+    public NettyServerHandler(List<RpcFilter> rpcFilterList) {
+        this.rpcFilterList = rpcFilterList;
     }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, NrpcRequest nrpcRequest) throws Exception {
         logger.info("received a request, id is {}", nrpcRequest.getRequestId());
         try {
-            for (RequestFilter filter : requestFilterList) {
+            for (RpcFilter filter : rpcFilterList) {
                 filter.doFilter(nrpcRequest);
             }
-        }catch (FilterException e){
+        }catch (RpcFilterException e){
             NrpcResponse nrpcResponse = wrapResponse(StatusCodeConstant.TOO_MANY_REQUESTS, e.getMessage(), null, nrpcRequest.getRequestId());
             ctx.channel().writeAndFlush(nrpcResponse);
         }

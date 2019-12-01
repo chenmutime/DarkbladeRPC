@@ -13,5 +13,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Configuration
 @Import({RegisterAutoConfiguration.class})
-public @interface EnableNrpcServerRegister {
+public @interface EnableServerRegister {
 }

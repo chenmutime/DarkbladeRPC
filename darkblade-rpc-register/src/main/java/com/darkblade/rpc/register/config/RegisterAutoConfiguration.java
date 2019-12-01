@@ -19,13 +19,11 @@ public class RegisterAutoConfiguration {
         logger.info("starting netty server...");
     }
 
-
-
-    @Bean
-    public ServerBootstrap nrpcServerBootstrap(RpcProperties rpcProperties) {
-        ServerBootstrap serverBootstrap = new ServerBootstrap(rpcProperties);
-        return serverBootstrap;
-    }
+//    @Bean
+//    public ServerBootstrap nrpcServerBootstrap(RpcProperties rpcProperties) {
+//        ServerBootstrap serverBootstrap = new ServerBootstrap(rpcProperties);
+//        return serverBootstrap;
+//    }
 
 
 }
