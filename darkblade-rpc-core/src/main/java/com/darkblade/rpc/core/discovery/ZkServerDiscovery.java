@@ -1,8 +1,9 @@
-package com.darkblade.rpc.core.zookeeper;
+package com.darkblade.rpc.core.discovery;
 
 import com.darkblade.rpc.common.constant.ZookeeperConstant;
-import com.darkblade.rpc.core.config.ZookeeperProperties;
-import com.darkblade.rpc.core.server.ServiceManager;
+import com.darkblade.rpc.core.config.ServerProperties;
+import com.darkblade.rpc.core.config.ZookeeperServerProperties;
+import com.darkblade.rpc.core.server.ServiceMetadataManager;
 import com.darkblade.rpc.core.exception.RemoteServerException;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
@@ -15,15 +16,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ZkServerDiscovery {
+public class ZkServerDiscovery implements ServerDiscovery {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private ZookeeperProperties zookeeperProperties;
+    private ZookeeperServerProperties zookeeperServerProperties;
 
-    public ZkServerDiscovery(ZookeeperProperties zookeeperProperties) {
-        this.zookeeperProperties = zookeeperProperties;
-
+    @Override
+    public void loadAllServices(ServerProperties serverProperties) {
+        this.zookeeperServerProperties = (ZookeeperServerProperties) serverProperties;
         ZooKeeper zookeeper = connectZookeeper();
         loadAllServices(zookeeper);
     }
@@ -51,7 +52,7 @@ public class ZkServerDiscovery {
                 String serverAddress = new String(serverAddressByte);
                 serverList.add(serverAddress);
             }
-            ServiceManager.getInstance().updateConnectServer(serverList);
+            ServiceMetadataManager.getInstance().updateConnectServer(serverList);
         } catch (KeeperException e) {
             logger.error(e.getMessage());
         } catch (InterruptedException e) {
@@ -64,7 +65,7 @@ public class ZkServerDiscovery {
     private ZooKeeper connectZookeeper() {
         ZooKeeper zookeeper = null;
         try {
-            zookeeper = new ZooKeeper(zookeeperProperties.getHost(), zookeeperProperties.getSessionTimeout(), new Watcher() {
+            zookeeper = new ZooKeeper(zookeeperServerProperties.getHost(), zookeeperServerProperties.getSessionTimeout(), new Watcher() {
                 @Override
                 public void process(WatchedEvent watchedEvent) {
                     logger.info("服务已建立");

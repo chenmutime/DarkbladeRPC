@@ -27,7 +27,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 /**
  * 保存来自服务端的metadata信息
  */
-public class ServiceManager {
+public class ServiceMetadataManager {
 
     //    服务列表
     private final List<String> SERVER_LIST = new ArrayList<>();
@@ -37,17 +37,17 @@ public class ServiceManager {
     private volatile AbstractChannelPoolMap defaultChannelMap;
 
     //    添加volatile为了禁止重排序，防止多线程修改nrpcServiceManager出错
-    private volatile static ServiceManager serviceManager;
+    private volatile static ServiceMetadataManager serviceMetadataManager;
 
-    public static ServiceManager getInstance() {
-        if (null == serviceManager) {
-            synchronized (ServiceManager.class) {
-                if (serviceManager == null) {
-                    serviceManager = new ServiceManager();
+    public static ServiceMetadataManager getInstance() {
+        if (null == serviceMetadataManager) {
+            synchronized (ServiceMetadataManager.class) {
+                if (serviceMetadataManager == null) {
+                    serviceMetadataManager = new ServiceMetadataManager();
                 }
             }
         }
-        return serviceManager;
+        return serviceMetadataManager;
     }
 
     public AbstractChannelPoolMap getDefaultChannelMap() {
@@ -100,7 +100,7 @@ public class ServiceManager {
 
     public void initalizeChannelFactory() {
         if (null == defaultChannelMap) {
-            synchronized (ServiceManager.class) {
+            synchronized (ServiceMetadataManager.class) {
                 if (defaultChannelMap == null) {
                     this.defaultChannelMap = new DefaultChannelMap();
                 }
@@ -144,7 +144,7 @@ public class ServiceManager {
     }
 
     public static Optional<RpcContext>  sendRequest(String serviceName, NrpcRequest nrpcRequest) throws Exception {
-        Optional<RpcContext> rpcFutureOptional = ServiceManager.getInstance().createRpcContext(serviceName);
+        Optional<RpcContext> rpcFutureOptional = ServiceMetadataManager.getInstance().createRpcContext(serviceName);
         if (rpcFutureOptional.isPresent()) {
             RpcContext rpcContext = rpcFutureOptional.get();
             CountDownLatch countDownLatch = new CountDownLatch(1);

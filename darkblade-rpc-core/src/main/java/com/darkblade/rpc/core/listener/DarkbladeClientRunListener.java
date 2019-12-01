@@ -1,12 +1,11 @@
 package com.darkblade.rpc.core.listener;
 
-import com.darkblade.rpc.core.config.ZookeeperProperties;
-import com.darkblade.rpc.core.server.ServiceManager;
-import com.darkblade.rpc.core.zookeeper.ZkServerDiscovery;
+import com.darkblade.rpc.core.config.ZookeeperServerProperties;
+import com.darkblade.rpc.core.server.ServiceMetadataManager;
+import com.darkblade.rpc.core.discovery.ZkServerDiscovery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringApplicationRunListener;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 
@@ -28,11 +27,11 @@ public class DarkbladeClientRunListener implements ApplicationListener {
      * 初始化连接池
      */
     private void startupConnectionPool() {
-        ServiceManager.getInstance().initalizeChannelFactory();
+        ServiceMetadataManager.getInstance().initalizeChannelFactory();
     }
 
     @Autowired
-    private ZookeeperProperties zookeeperProperties;
+    private ZookeeperServerProperties zookeeperProperties;
 
     /**
      * 启动注册中心

@@ -4,8 +4,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@ConfigurationProperties(prefix = "nrpc.client")
-public class ZookeeperProperties {
+@ConfigurationProperties(prefix = "com.darkblade.rpc.core")
+public class ZookeeperServerProperties extends ServerProperties {
 
     private String host = "localhost";
 

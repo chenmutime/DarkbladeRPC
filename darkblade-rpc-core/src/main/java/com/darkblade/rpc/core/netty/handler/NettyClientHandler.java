@@ -1,7 +1,7 @@
 package com.darkblade.rpc.core.netty.handler;
 
 import com.darkblade.rpc.common.dto.NrpcResponse;
-import com.darkblade.rpc.core.server.ServiceManager;
+import com.darkblade.rpc.core.server.ServiceMetadataManager;
 import com.darkblade.rpc.core.context.RpcContext;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -26,7 +26,7 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<NrpcResponse
                 rpcContext.setResponse(nrpcResponse);
                 rpcContext.done();
                 pending_queued.remove(nrpcResponse.getRequestId());
-                ServiceManager.getInstance().releaseChannel(rpcContext, ctx.channel());
+                ServiceMetadataManager.getInstance().releaseChannel(rpcContext, ctx.channel());
             }
         }
     }
@@ -35,7 +35,7 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<NrpcResponse
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         logger.error(cause.getMessage());
         for (RpcContext rpcContext : pending_queued.values()) {
-            ServiceManager.getInstance().releaseChannel(rpcContext, ctx.channel());
+            ServiceMetadataManager.getInstance().releaseChannel(rpcContext, ctx.channel());
         }
     }
 
