@@ -10,6 +10,6 @@ import java.lang.annotation.*;
 @Target({ElementType.TYPE})
 @Documented
 @Import({RpcClientRegister.class, AutoConfiguration.class})
-public @interface EnableServiceDiscovery {
+public @interface EnableServerDiscovery {
 
 }

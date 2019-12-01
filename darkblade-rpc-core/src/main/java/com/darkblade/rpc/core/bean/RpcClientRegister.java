@@ -1,7 +1,7 @@
 package com.darkblade.rpc.core.bean;
 
 import com.darkblade.rpc.core.annotation.RpcClient;
-import com.darkblade.rpc.core.annotation.RpcClients;
+import com.darkblade.rpc.core.annotation.RpcClientsScan;
 import com.darkblade.rpc.core.invoker.ObjectProxy;
 import com.darkblade.rpc.core.invoker.ProxyBuidler;
 import org.slf4j.Logger;
@@ -46,7 +46,7 @@ public class RpcClientRegister implements ImportBeanDefinitionRegistrar, BeanFac
     public void registerBeanDefinitions(AnnotationMetadata metadata, BeanDefinitionRegistry registry) {
         logger.info("正在扫描注解了NrpcClient的类");
         ClassPathScanningCandidateComponentProvider scanner = this.getScanner();
-        Map<String, Object> attrs = metadata.getAnnotationAttributes(RpcClients.class.getName(), true);
+        Map<String, Object> attrs = metadata.getAnnotationAttributes(RpcClientsScan.class.getName(), true);
         String besePackage = (String) attrs.get("basePackage");
 //        添加只抓取注释了NrpcClient的过滤器
         AnnotationTypeFilter annotationTypeFilter = new AnnotationTypeFilter(RpcClient.class);
