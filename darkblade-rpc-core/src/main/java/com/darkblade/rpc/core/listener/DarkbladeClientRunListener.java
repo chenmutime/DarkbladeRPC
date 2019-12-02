@@ -1,6 +1,7 @@
 package com.darkblade.rpc.core.listener;
 
 import com.darkblade.rpc.core.config.ZookeeperServerProperties;
+import com.darkblade.rpc.core.discovery.ServerDiscovery;
 import com.darkblade.rpc.core.server.ServiceMetadataManager;
 import com.darkblade.rpc.core.discovery.ZkServerDiscovery;
 import org.slf4j.Logger;
@@ -37,6 +38,7 @@ public class DarkbladeClientRunListener implements ApplicationListener {
      * 启动注册中心
      */
     private void startupRegistrationCenter() {
-        new ZkServerDiscovery(zookeeperProperties);
+        ServerDiscovery serverDiscovery = new ZkServerDiscovery();
+        serverDiscovery.loadAllServices(zookeeperProperties);
     }
 }
