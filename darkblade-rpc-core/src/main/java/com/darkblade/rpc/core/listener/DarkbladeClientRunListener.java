@@ -3,7 +3,7 @@ package com.darkblade.rpc.core.listener;
 import com.darkblade.rpc.core.config.ZookeeperServerProperties;
 import com.darkblade.rpc.core.discovery.ServerDiscovery;
 import com.darkblade.rpc.core.server.ServiceMetadataManager;
-import com.darkblade.rpc.core.discovery.ZkServerDiscovery;
+import com.darkblade.rpc.core.discovery.zookeeper.ZkServerDiscovery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

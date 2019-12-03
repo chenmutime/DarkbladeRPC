@@ -1,8 +1,10 @@
-package com.darkblade.rpc.core.discovery;
+package com.darkblade.rpc.core.discovery.zookeeper;
 
+import com.darkblade.rpc.common.annotation.DarkRegistrationBean;
 import com.darkblade.rpc.common.constant.ZookeeperConstant;
 import com.darkblade.rpc.core.config.ServerProperties;
 import com.darkblade.rpc.core.config.ZookeeperServerProperties;
+import com.darkblade.rpc.core.discovery.ServerDiscovery;
 import com.darkblade.rpc.core.server.ServiceMetadataManager;
 import com.darkblade.rpc.core.exception.RemoteServerException;
 import org.apache.zookeeper.KeeperException;
@@ -16,17 +18,43 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+@DarkRegistrationBean(serviceCenterName = "zookeeper")
 public class ZkServerDiscovery implements ServerDiscovery {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private ZookeeperServerProperties zookeeperServerProperties;
 
+    private volatile ZooKeeper zooKeeper;
+
     @Override
-    public void loadAllServices(ServerProperties serverProperties) {
+    public void startup(ServerProperties serverProperties) {
         this.zookeeperServerProperties = (ZookeeperServerProperties) serverProperties;
-        ZooKeeper zookeeper = connectZookeeper();
-        loadAllServices(zookeeper);
+        this.zooKeeper = connectZookeeper();
+        loadAllServices(this.zooKeeper);
+    }
+
+    @Override
+    public List<String> serviceNames() {
+        return ServiceMetadataManager.getInstance().serverList();
+    }
+
+    @Override
+    public String health() {
+        if (this.zooKeeper.getState().isAlive()) {
+            return "UP";
+        }
+        return "CLOESD";
+    }
+
+    @Override
+    public void close() {
+        try {
+            zooKeeper.close();
+        } catch (InterruptedException e) {
+            this.logger.error(e.toString());
+        }
+        ServiceMetadataManager.getInstance().destoryConnections();
     }
 
     /**
@@ -76,4 +104,6 @@ public class ZkServerDiscovery implements ServerDiscovery {
         }
         return zookeeper;
     }
+
+
 }

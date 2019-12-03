@@ -13,9 +13,9 @@
     <groupId>com.darkblade.rpc</groupId>
     <artifactId>darkblade-rpc-core</artifactId>
 
-    <serverProperties>
+    <properties>
         <darkblade.rpc.common.version>1.0.0</darkblade.rpc.common.version>
-    </serverProperties>
+    </properties>
 
     <dependencies>
         <dependency>

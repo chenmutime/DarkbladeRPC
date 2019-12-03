@@ -50,8 +50,8 @@ public class ServiceMetadataManager {
         return serviceMetadataManager;
     }
 
-    public AbstractChannelPoolMap getDefaultChannelMap() {
-        return this.defaultChannelMap;
+    public List<String> serverList() {
+        return this.SERVER_LIST;
     }
 
     public void updateConnectServer(List<String> serverList) throws RemoteServerException {
@@ -112,6 +112,7 @@ public class ServiceMetadataManager {
         if (this.defaultChannelMap != null) {
             this.defaultChannelMap.close();
         }
+        clearServer();
     }
 
     private Optional<RpcContext> createRpcContext(String serviceName) throws Exception {
@@ -133,7 +134,7 @@ public class ServiceMetadataManager {
         return Optional.empty();
     }
 
-    private ChannelPool getChannelPool(RpcContext rpcContext){
+    private ChannelPool getChannelPool(RpcContext rpcContext) {
         return defaultChannelMap.get(rpcContext.getInetSocketAddress());
     }
 
@@ -143,7 +144,7 @@ public class ServiceMetadataManager {
         channelPool.release(channel);
     }
 
-    public static Optional<RpcContext>  sendRequest(String serviceName, NrpcRequest nrpcRequest) throws Exception {
+    public static Optional<RpcContext> sendRequest(String serviceName, NrpcRequest nrpcRequest) throws Exception {
         Optional<RpcContext> rpcFutureOptional = ServiceMetadataManager.getInstance().createRpcContext(serviceName);
         if (rpcFutureOptional.isPresent()) {
             RpcContext rpcContext = rpcFutureOptional.get();
