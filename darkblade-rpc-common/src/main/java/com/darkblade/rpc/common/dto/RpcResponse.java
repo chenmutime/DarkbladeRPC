@@ -2,7 +2,7 @@ package com.darkblade.rpc.common.dto;
 
 import java.io.Serializable;
 
-public class NrpcResponse implements Serializable {
+public class RpcResponse implements Serializable {
 
     private String requestId;
 
