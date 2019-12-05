@@ -1,2 +1,2 @@
 #RunListener
-#org.springframework.boot.SpringApplicationRunListener=com.darkblade.rpc.core.listener.DarkbladeClientRunListener
+#org.springframework.boot.SpringApplicationRunListener=com.darkblade.rpc.core.listener.DarkbladeClientBootstrap

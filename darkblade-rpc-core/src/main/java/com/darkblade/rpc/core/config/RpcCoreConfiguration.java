@@ -17,4 +17,6 @@ public class RpcCoreConfiguration {
     protected String serializer;
     //     动态代理方式，默认JDK动态代理
     protected Boolean proxyTargetClass;
+
+
 }

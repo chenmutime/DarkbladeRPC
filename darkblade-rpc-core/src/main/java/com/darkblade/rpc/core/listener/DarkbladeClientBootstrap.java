@@ -2,32 +2,31 @@ package com.darkblade.rpc.core.listener;
 
 import com.darkblade.rpc.core.config.ZookeeperServerProperties;
 import com.darkblade.rpc.core.discovery.ServerDiscovery;
-import com.darkblade.rpc.core.server.ServiceMetadataManager;
 import com.darkblade.rpc.core.discovery.zookeeper.ZkServerDiscovery;
+import com.darkblade.rpc.core.server.ServiceMetadataManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationListener;
 
 /**
- * 初始化服务
+ * 初始化调用连接池、服务中心
  */
-public class DarkbladeClientRunListener implements ApplicationListener {
+public class DarkbladeClientBootstrap implements InitializingBean {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
-    public void onApplicationEvent(ApplicationEvent applicationEvent) {
+    public void afterPropertiesSet() throws Exception {
         logger.info("正在启动rpc客户端");
-        startupConnectionPool();
-        startupRegistrationCenter();
+        startupNettyPool();
+        startupServiceCenter();
     }
 
     /**
      * 初始化连接池
      */
-    private void startupConnectionPool() {
+    private void startupNettyPool() {
         ServiceMetadataManager.getInstance().initalizeChannelFactory();
     }
 
@@ -37,7 +36,7 @@ public class DarkbladeClientRunListener implements ApplicationListener {
     /**
      * 启动注册中心
      */
-    private void startupRegistrationCenter() {
+    private void startupServiceCenter() {
         ServerDiscovery serverDiscovery = new ZkServerDiscovery();
         serverDiscovery.startup(zookeeperProperties);
     }

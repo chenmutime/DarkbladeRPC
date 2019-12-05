@@ -1,4 +1,4 @@
-package com.darkblade.rpc.register.handler;
+package com.darkblade.rpc.register.netty.handler;
 
 import com.darkblade.rpc.common.constant.StatusCodeConstant;
 import com.darkblade.rpc.common.dto.RpcRequest;

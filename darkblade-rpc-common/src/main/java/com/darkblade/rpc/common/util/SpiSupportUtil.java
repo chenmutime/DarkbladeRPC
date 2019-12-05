@@ -1,21 +1,14 @@
 package com.darkblade.rpc.common.util;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.ServiceLoader;
+
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 public class SpiSupportUtil<T> {
 
-    public Map<String, T> loadSPI(Class clz) {
+    public List<T> loadSPI(Class clz) {
         ServiceLoader<T> serviceLoader = ServiceLoader.load(clz);
-        Map<String, T> spiMap = new HashMap<>();
-        Iterator<T> iterable = serviceLoader.iterator();
-        while (iterable.hasNext()) {
-            T obj = iterable.next();
-            Class<?> objClass = obj.getClass();
-            spiMap.put(objClass.getSimpleName(), obj);
-        }
-        return spiMap;
+        return StreamSupport.stream(serviceLoader.spliterator(), false).collect(Collectors.toList());
     }
 }

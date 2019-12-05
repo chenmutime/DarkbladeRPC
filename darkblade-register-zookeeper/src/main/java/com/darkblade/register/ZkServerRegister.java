@@ -1,39 +1,46 @@
-package com.darkblade.rpc.register.registry.zookeeper;
+package com.darkblade.register;
 
 import com.darkblade.rpc.common.constant.ZookeeperConstant;
 import com.darkblade.rpc.register.config.RpcProperties;
+import com.darkblade.rpc.register.config.ZookeeperProperties;
+import com.darkblade.rpc.register.registry.ServerRegister;
 import org.apache.zookeeper.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-public class ZkServerRegister {
+public class ZkServerRegister implements ServerRegister {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private RpcProperties rpcProperties;
 
-    public ZkServerRegister(RpcProperties rpcProperties) {
-        this.rpcProperties = rpcProperties;
-    }
 
-    public void register(String serviceAddress) {
+    @Override
+    public void register(RpcProperties rpcProperties, String serviceAddress) {
+        this.rpcProperties = rpcProperties;
         ZooKeeper zookeeper = connectZookeeper();
         addRootNode(zookeeper);
         creatNode(zookeeper, serviceAddress);
     }
 
-    public ZooKeeper connectZookeeper() {
+    private ZooKeeper connectZookeeper() {
         ZooKeeper zookeeper = null;
         try {
-            zookeeper = new ZooKeeper(rpcProperties.getZookeeper().getHost(), rpcProperties.getZookeeper().getSessionTimeout(), new Watcher() {
+            ZookeeperProperties zookeeperProperties = rpcProperties.getZookeeper();
+            if (null == zookeeperProperties) {
+                zookeeperProperties = new ZookeeperProperties();
+            }
+            zookeeper = new ZooKeeper(zookeeperProperties.getHost(), 3000, new Watcher() {
                 @Override
                 public void process(WatchedEvent watchedEvent) {
                     logger.info("服务已建立");
                 }
             });
         } catch (IOException e) {
+            logger.error(e.getMessage());
+        } catch (Exception e) {
             logger.error(e.getMessage());
         }
         return zookeeper;
@@ -52,7 +59,7 @@ public class ZkServerRegister {
         }
     }
 
-//    注册服务地址
+    //    注册服务地址
     private void creatNode(ZooKeeper zk, String serviceAddress) {
         try {
             logger.info("Initiating service node...");

@@ -4,12 +4,12 @@ import com.darkblade.rpc.common.dto.RpcRequest;
 import com.darkblade.rpc.common.dto.RpcResponse;
 import com.darkblade.rpc.common.serializer.RpcDecoder;
 import com.darkblade.rpc.common.serializer.RpcEncoder;
+import com.darkblade.rpc.common.util.SpiSupportUtil;
 import com.darkblade.rpc.register.annotation.RpcService;
 import com.darkblade.rpc.register.config.RpcProperties;
 import com.darkblade.rpc.register.filter.RpcFilter;
-import com.darkblade.rpc.register.handler.NettyServerHandler;
+import com.darkblade.rpc.register.netty.handler.NettyServerHandler;
 import com.darkblade.rpc.register.limiter.RateLimiterHelper;
-import com.darkblade.rpc.register.registry.zookeeper.ZkServerRegister;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -23,51 +23,51 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.stereotype.Component;
 import org.springframework.util.SystemPropertyUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-@Component
-public class ServerBootstrap implements ApplicationContextAware, InitializingBean {
+public class DarkBladeServerBootstrap extends RpcProperties implements ApplicationContextAware, InitializingBean {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private RpcProperties rpcProperties;
     private List<RpcFilter> rpcFilterList;
 
-    public ServerBootstrap(RpcProperties rpcProperties) {
+    public DarkBladeServerBootstrap(RpcProperties rpcProperties) {
         this.rpcProperties = rpcProperties;
         RateLimiterHelper.init(rpcProperties.getLimiter());
     }
 
     @Override
     public void setApplicationContext(ApplicationContext ctx) throws BeansException {
-
         register();
-        try {
-            loadAllRpcServices(ctx);
-            loadAllRpcFilters(ctx);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        loadAllRpcServices(ctx);
+        loadAllRpcFilters(ctx);
     }
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        start();
+        startupNettyServer();
     }
 
     /**
      * 向zookeeper注册自身
      */
     private synchronized void register() {
-        ZkServerRegister zkServerRegister = new ZkServerRegister(rpcProperties);
+        List<ServerRegister> serverRegisterList = new SpiSupportUtil().loadSPI(ServerRegister.class);
+        try {
+            if (serverRegisterList.isEmpty()) {
+                throw new Exception("you need to add a service register center");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        ServerRegister serverRegister = serverRegisterList.get(0);
         String serviceName = rpcProperties.getServiceName();
-        zkServerRegister.register(serviceName + SystemPropertyUtils.VALUE_SEPARATOR + rpcProperties.getHost() + SystemPropertyUtils.VALUE_SEPARATOR + rpcProperties.getPort());
+        String serviceAddress = serviceName + SystemPropertyUtils.VALUE_SEPARATOR + rpcProperties.getHost() + SystemPropertyUtils.VALUE_SEPARATOR + rpcProperties.getPort();
+        serverRegister.register(rpcProperties, serviceAddress);
     }
 
     /**
@@ -76,13 +76,21 @@ public class ServerBootstrap implements ApplicationContextAware, InitializingBea
      * @param ctx
      * @throws Exception
      */
-    private synchronized void loadAllRpcFilters(ApplicationContext ctx) throws Exception {
+    private synchronized void loadAllRpcFilters(ApplicationContext ctx) {
         logger.info("Scanning filters...");
         String[] filters = ctx.getBeanNamesForType(RpcFilter.class);
         List<RpcFilter> filterList = new ArrayList<>();
-        for (String filter : filters) {
-            RpcFilter rpcFilter = (RpcFilter) Class.forName(filter).newInstance();
-            filterList.add(rpcFilter);
+        try {
+            for (String filter : filters) {
+                RpcFilter rpcFilter = (RpcFilter) Class.forName(filter).newInstance();
+                filterList.add(rpcFilter);
+            }
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
         }
         if (null == rpcFilterList) {
             rpcFilterList = new CopyOnWriteArrayList(filterList);
@@ -96,19 +104,23 @@ public class ServerBootstrap implements ApplicationContextAware, InitializingBea
      * @param ctx
      * @throws Exception
      */
-    private synchronized void loadAllRpcServices(ApplicationContext ctx) throws Exception {
+    private synchronized void loadAllRpcServices(ApplicationContext ctx) {
         logger.info("Scanning NrpcServices...");
         Map<String, Object> beanMap = ctx.getBeansWithAnnotation(RpcService.class);
-        for (Object obj : beanMap.values()) {
-            String interfaceName = obj.getClass().getAnnotation(RpcService.class).value().getSimpleName();
-            if (ServerManager.getBeanMap().containsKey(interfaceName)) {
-                throw new Exception("Classes with duplicates：" + interfaceName);
+        try {
+            for (Object obj : beanMap.values()) {
+                String interfaceName = obj.getClass().getAnnotation(RpcService.class).value().getSimpleName();
+                if (ServerManager.getBeanMap().containsKey(interfaceName)) {
+                    throw new Exception("Classes with duplicates：" + interfaceName);
+                }
+                ServerManager.getBeanMap().put(interfaceName, obj);
             }
-            ServerManager.getBeanMap().put(interfaceName, obj);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
-    private void start() {
+    private void startupNettyServer() {
         logger.info("starting server...");
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();

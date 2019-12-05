@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.darkblade.rpc</groupId>
+        <artifactId>darkblade-rpc-parent</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+
+    <groupId>com.darkblade.register</groupId>
+    <artifactId>darkblade-register-zookeeper</artifactId>
+    <version>1.0.0</version>
+
+    <name>darkblade-register-zookeeper</name>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <darkblade.rpc.common.version>1.0.0</darkblade.rpc.common.version>
+        <darkblade.rpc.register.version>1.0.0</darkblade.rpc.register.version>
+        <zookeeper.version>3.4.14</zookeeper.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.darkblade.rpc</groupId>
+            <artifactId>darkblade-rpc-register</artifactId>
+            <version>${darkblade.rpc.register.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.darkblade.rpc</groupId>
+            <artifactId>darkblade-rpc-common</artifactId>
+            <version>${darkblade.rpc.common.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.zookeeper</groupId>
+            <artifactId>zookeeper</artifactId>
+            <version>${zookeeper.version}</version>
+        </dependency>
+    </dependencies>
+
+</project>
