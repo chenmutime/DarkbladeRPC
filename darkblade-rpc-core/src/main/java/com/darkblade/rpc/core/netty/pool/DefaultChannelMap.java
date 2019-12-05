@@ -26,8 +26,8 @@ public class DefaultChannelMap extends AbstractChannelPoolMap<InetSocketAddress,
         bootstrap.group(eventLoopGroup);
         bootstrap.option(ChannelOption.SO_KEEPALIVE, true);
         bootstrap.option(ChannelOption.TCP_NODELAY, true);
-        bootstrap.option(ChannelOption.SO_SNDBUF, 2048);
-        bootstrap.option(ChannelOption.SO_RCVBUF, 2048);
+        bootstrap.option(ChannelOption.SO_SNDBUF, 1024);
+        bootstrap.option(ChannelOption.SO_RCVBUF, 1024);
         bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 1000);
 
         AbstractChannelPoolHandler channelPoolHandler = handlerMap.get(inetAddr);

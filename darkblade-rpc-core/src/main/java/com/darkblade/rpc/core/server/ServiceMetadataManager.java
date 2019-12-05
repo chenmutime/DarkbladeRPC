@@ -1,8 +1,8 @@
 package com.darkblade.rpc.core.server;
 
-import com.darkblade.rpc.common.dto.NrpcRequest;
-import com.darkblade.rpc.core.exception.RemoteServerException;
+import com.darkblade.rpc.common.dto.RpcRequest;
 import com.darkblade.rpc.core.context.RpcContext;
+import com.darkblade.rpc.core.exception.RemoteServerException;
 import com.darkblade.rpc.core.netty.handler.NettyClientHandler;
 import com.darkblade.rpc.core.netty.pool.DefaultChannelMap;
 import io.netty.channel.Channel;
@@ -144,7 +144,7 @@ public class ServiceMetadataManager {
         channelPool.release(channel);
     }
 
-    public static Optional<RpcContext> sendRequest(String serviceName, NrpcRequest nrpcRequest) throws Exception {
+    public static Optional<RpcContext> sendRequest(String serviceName, RpcRequest nrpcRequest) throws Exception {
         Optional<RpcContext> rpcFutureOptional = ServiceMetadataManager.getInstance().createRpcContext(serviceName);
         if (rpcFutureOptional.isPresent()) {
             RpcContext rpcContext = rpcFutureOptional.get();

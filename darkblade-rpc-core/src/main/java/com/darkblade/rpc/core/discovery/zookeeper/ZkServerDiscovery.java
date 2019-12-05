@@ -1,6 +1,5 @@
 package com.darkblade.rpc.core.discovery.zookeeper;
 
-import com.darkblade.rpc.common.annotation.DarkRegistrationBean;
 import com.darkblade.rpc.common.constant.ZookeeperConstant;
 import com.darkblade.rpc.core.config.ServerProperties;
 import com.darkblade.rpc.core.config.ZookeeperServerProperties;
@@ -18,7 +17,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-@DarkRegistrationBean(serviceCenterName = "zookeeper")
 public class ZkServerDiscovery implements ServerDiscovery {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());

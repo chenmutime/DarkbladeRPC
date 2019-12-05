@@ -1,18 +1,19 @@
 package com.darkblade.rpc.core.context;
 
-import com.darkblade.rpc.common.dto.NrpcResponse;
+import com.darkblade.rpc.common.dto.RpcResponse;
+import lombok.Data;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
-
+@Data
 public class RpcContext implements Future<Object> {
 
     private InetSocketAddress inetSocketAddress;
     private Sync sync;
     private String serviceName;
-    private NrpcResponse response;
+    private RpcResponse response;
 
     public String getServiceName() {
         return serviceName;
@@ -24,7 +25,7 @@ public class RpcContext implements Future<Object> {
         this.inetSocketAddress = inetSocketAddress;
     }
 
-    public void setResponse(NrpcResponse response) {
+    public void setResponse(RpcResponse response) {
         this.response = response;
     }
 
@@ -47,22 +48,14 @@ public class RpcContext implements Future<Object> {
         this.sync.release(1);
     }
 
-    public InetSocketAddress getInetSocketAddress() {
-        return inetSocketAddress;
-    }
-
-    public void setInetSocketAddress(InetSocketAddress inetSocketAddress) {
-        this.inetSocketAddress = inetSocketAddress;
-    }
-
     @Override
-    public NrpcResponse get() {
+    public RpcResponse get() {
         this.sync.acquire(-1);
         return this.response;
     }
 
     @Override
-    public NrpcResponse get(long timeout, TimeUnit unit) throws InterruptedException {
+    public RpcResponse get(long timeout, TimeUnit unit) throws InterruptedException {
         this.sync.tryAcquireNanos(-1, unit.toNanos(timeout));
         return this.response;
     }

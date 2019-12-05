@@ -39,6 +39,6 @@ public class DarkbladeClientRunListener implements ApplicationListener {
      */
     private void startupRegistrationCenter() {
         ServerDiscovery serverDiscovery = new ZkServerDiscovery();
-        serverDiscovery.loadAllServices(zookeeperProperties);
+        serverDiscovery.startup(zookeeperProperties);
     }
 }

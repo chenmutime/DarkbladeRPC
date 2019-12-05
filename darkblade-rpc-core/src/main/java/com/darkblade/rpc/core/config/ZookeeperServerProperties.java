@@ -1,8 +1,9 @@
 package com.darkblade.rpc.core.config;
 
+import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
-
+@Data
 @Configuration
 @ConfigurationProperties(prefix = "com.darkblade.rpc.core")
 public class ZookeeperServerProperties extends ServerProperties {
@@ -12,30 +13,6 @@ public class ZookeeperServerProperties extends ServerProperties {
     private int port = 2181;
 
     private int sessionTimeout = 3000;
-
-    public String getHost() {
-        return host;
-    }
-
-    public void setHost(String host) {
-        this.host = host;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
-
-    public int getSessionTimeout() {
-        return sessionTimeout;
-    }
-
-    public void setSessionTimeout(int sessionTimeout) {
-        this.sessionTimeout = sessionTimeout;
-    }
 
 
 }
