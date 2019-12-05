@@ -1,8 +1,8 @@
 package com.darkblade.rpc.register.handler;
 
 import com.darkblade.rpc.common.constant.StatusCodeConstant;
-import com.darkblade.rpc.common.dto.NrpcRequest;
-import com.darkblade.rpc.common.dto.NrpcResponse;
+import com.darkblade.rpc.common.dto.RpcRequest;
+import com.darkblade.rpc.common.dto.RpcResponse;
 import com.darkblade.rpc.register.registry.ServerManager;
 import com.darkblade.rpc.register.exception.RpcFilterException;
 import com.darkblade.rpc.register.filter.RpcFilter;
@@ -18,7 +18,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Objects;
 
-public class NettyServerHandler extends SimpleChannelInboundHandler<NrpcRequest> {
+public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -29,32 +29,32 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<NrpcRequest>
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, NrpcRequest nrpcRequest) throws Exception {
-        logger.info("received a request, id is {}", nrpcRequest.getRequestId());
+    protected void channelRead0(ChannelHandlerContext ctx, RpcRequest rpcRequest) throws Exception {
+        logger.info("received a request, id is {}", rpcRequest.getRequestId());
         try {
             for (RpcFilter filter : rpcFilterList) {
-                filter.doFilter(nrpcRequest);
+                filter.doFilter(rpcRequest);
             }
         }catch (RpcFilterException e){
-            NrpcResponse nrpcResponse = wrapResponse(StatusCodeConstant.TOO_MANY_REQUESTS, e.getMessage(), null, nrpcRequest.getRequestId());
-            ctx.channel().writeAndFlush(nrpcResponse);
+            RpcResponse RpcResponse = wrapResponse(StatusCodeConstant.TOO_MANY_REQUESTS, e.getMessage(), null, rpcRequest.getRequestId());
+            ctx.channel().writeAndFlush(RpcResponse);
         }
 
         ServerManager.submit(new Runnable() {
             @Override
             public void run() {
-                NrpcResponse nrpcResponse = new NrpcResponse();
+                RpcResponse RpcResponse = new RpcResponse();
                 Channel channel = ctx.channel();
                 try {
-                    nrpcResponse = handle(nrpcRequest);
+                    RpcResponse = handle(rpcRequest);
                 } catch (InvocationTargetException e) {
                     logger.error("occur a exception:" + e);
-                    nrpcResponse = wrapResponse(StatusCodeConstant.METHOD_NOT_EXIST, e.getCause().getMessage(), null, nrpcRequest.getRequestId());
+                    RpcResponse = wrapResponse(StatusCodeConstant.METHOD_NOT_EXIST, e.getCause().getMessage(), null, rpcRequest.getRequestId());
                 } catch (Exception e) {
                     logger.error("occur a exception:" + e);
-                    nrpcResponse = wrapResponse(StatusCodeConstant.UNKOWN, e.getCause().getMessage(), null, nrpcRequest.getRequestId());
+                    RpcResponse = wrapResponse(StatusCodeConstant.UNKOWN, e.getCause().getMessage(), null, rpcRequest.getRequestId());
                 } finally {
-                    channel.writeAndFlush(nrpcResponse);
+                    channel.writeAndFlush(RpcResponse);
                 }
             }
         });
@@ -71,31 +71,31 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<NrpcRequest>
         logger.info("inactived a channel");
     }
 
-    private NrpcResponse handle(NrpcRequest nrpcRequest) throws InvocationTargetException {
+    private RpcResponse handle(RpcRequest RpcRequest) throws InvocationTargetException {
         logger.info("执行服务方法");
-        NrpcResponse nrpcResponse;
-        if (!StringUtils.isEmpty(nrpcRequest.getRequestId())) {
-            Object bean = ServerManager.getBeanMap().get(nrpcRequest.getCalssName());
+        RpcResponse RpcResponse;
+        if (!StringUtils.isEmpty(RpcRequest.getRequestId())) {
+            Object bean = ServerManager.getBeanMap().get(RpcRequest.getCalssName());
             if (Objects.nonNull(bean)) {
                 FastClass serviceFastClass = FastClass.create(bean.getClass());
-                int methodIndex = serviceFastClass.getIndex(nrpcRequest.getMethodName(), nrpcRequest.getParameterTypes());
+                int methodIndex = serviceFastClass.getIndex(RpcRequest.getMethodName(), RpcRequest.getParameterTypes());
                 if (methodIndex >= 0) {
-                    Object result = serviceFastClass.invoke(methodIndex, bean, nrpcRequest.getParameters());
-                    nrpcResponse = wrapResponse(StatusCodeConstant.SUCCESS, "", result, nrpcRequest.getRequestId());
+                    Object result = serviceFastClass.invoke(methodIndex, bean, RpcRequest.getParameters());
+                    RpcResponse = wrapResponse(StatusCodeConstant.SUCCESS, "", result, RpcRequest.getRequestId());
                 } else {
-                    nrpcResponse = wrapResponse(StatusCodeConstant.METHOD_NOT_EXIST, "method is not exist", null, nrpcRequest.getRequestId());
+                    RpcResponse = wrapResponse(StatusCodeConstant.METHOD_NOT_EXIST, "method is not exist", null, RpcRequest.getRequestId());
                 }
             } else {
-                nrpcResponse = wrapResponse(StatusCodeConstant.SERVICE_NOT_EXIST, "service is not exist", null, nrpcRequest.getRequestId());
+                RpcResponse = wrapResponse(StatusCodeConstant.SERVICE_NOT_EXIST, "service is not exist", null, RpcRequest.getRequestId());
             }
         } else {
-            nrpcResponse = wrapResponse(StatusCodeConstant.REQUEST_ID_IS_NULL, "requestId is null", null, nrpcRequest.getRequestId());
+            RpcResponse = wrapResponse(StatusCodeConstant.REQUEST_ID_IS_NULL, "requestId is null", null, RpcRequest.getRequestId());
         }
-        return nrpcResponse;
+        return RpcResponse;
     }
 
-    private NrpcResponse wrapResponse(int code, String error, Object body, String requestId) {
-        NrpcResponse response = new NrpcResponse();
+    private RpcResponse wrapResponse(int code, String error, Object body, String requestId) {
+        RpcResponse response = new RpcResponse();
         response.setRequestId(requestId);
         response.setCode(code);
         response.setBody(body);

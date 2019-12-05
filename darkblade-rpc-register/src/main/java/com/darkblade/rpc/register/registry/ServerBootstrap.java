@@ -1,7 +1,7 @@
 package com.darkblade.rpc.register.registry;
 
-import com.darkblade.rpc.common.dto.NrpcRequest;
-import com.darkblade.rpc.common.dto.NrpcResponse;
+import com.darkblade.rpc.common.dto.RpcRequest;
+import com.darkblade.rpc.common.dto.RpcResponse;
 import com.darkblade.rpc.common.serializer.RpcDecoder;
 import com.darkblade.rpc.common.serializer.RpcEncoder;
 import com.darkblade.rpc.register.annotation.RpcService;
@@ -121,8 +121,8 @@ public class ServerBootstrap implements ApplicationContextAware, InitializingBea
             bootstrap.childHandler(new ChannelInitializer<SocketChannel>() {
                 @Override
                 public void initChannel(SocketChannel ch) throws Exception {
-                    ch.pipeline().addLast(new RpcDecoder(NrpcRequest.class));
-                    ch.pipeline().addLast(new RpcEncoder(NrpcResponse.class));
+                    ch.pipeline().addLast(new RpcDecoder(RpcRequest.class));
+                    ch.pipeline().addLast(new RpcEncoder(RpcResponse.class));
                     ch.pipeline().addLast(new NettyServerHandler(rpcFilterList));
                 }
             });
