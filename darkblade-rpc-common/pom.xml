@@ -13,24 +13,34 @@
 
     <groupId>com.darkblade.rpc</groupId>
     <artifactId>darkblade-rpc-common</artifactId>
-    <version>1.0.0</version>
+
+    <properties>
+        <netty.version>4.1.43.Final</netty.version>
+        <protostuff.version>1.0.8</protostuff.version>
+        <lombok.version>1.18.10</lombok.version>
+    </properties>
 
     <dependencies>
         <!-- Protostuff -->
         <dependency>
             <groupId>com.dyuproject.protostuff</groupId>
             <artifactId>protostuff-core</artifactId>
-            <version>1.0.8</version>
+            <version>${protostuff.version}</version>
         </dependency>
         <dependency>
             <groupId>com.dyuproject.protostuff</groupId>
             <artifactId>protostuff-runtime</artifactId>
-            <version>1.0.8</version>
+            <version>${protostuff.version}</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.10</version>
+            <version>${lombok.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>${netty.version}</version>
         </dependency>
 
     </dependencies>
