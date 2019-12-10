@@ -1,13 +1,15 @@
 package com.darkblade.rpc.core.listener;
 
+import com.darkblade.rpc.common.util.SpiSupportUtil;
 import com.darkblade.rpc.core.config.ZookeeperServerProperties;
 import com.darkblade.rpc.core.discovery.ServerDiscovery;
-import com.darkblade.rpc.core.discovery.zookeeper.ZkServerDiscovery;
 import com.darkblade.rpc.core.server.ServiceMetadataManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
 
 /**
  * 初始化调用连接池、服务中心
@@ -37,7 +39,15 @@ public class DarkbladeClientBootstrap implements InitializingBean {
      * 启动注册中心
      */
     private void startupServiceCenter() {
-        ServerDiscovery serverDiscovery = new ZkServerDiscovery();
+        List<ServerDiscovery> serverDiscoveryList = new SpiSupportUtil().loadSPI(ServerDiscovery.class);
+        try {
+            if (serverDiscoveryList.isEmpty()) {
+                throw new Exception("you need to add a service discovery center");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        ServerDiscovery serverDiscovery = serverDiscoveryList.get(0);
         serverDiscovery.startup(zookeeperProperties);
     }
 }
