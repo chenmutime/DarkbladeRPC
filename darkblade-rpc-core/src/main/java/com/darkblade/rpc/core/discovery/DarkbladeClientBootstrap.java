@@ -1,25 +1,26 @@
-package com.darkblade.rpc.core.listener;
+package com.darkblade.rpc.core.discovery;
 
 import com.darkblade.rpc.common.util.SpiSupportUtil;
 import com.darkblade.rpc.core.config.ZookeeperServerProperties;
-import com.darkblade.rpc.core.discovery.ServerDiscovery;
 import com.darkblade.rpc.core.server.ServiceMetadataManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 import java.util.List;
 
 /**
  * 初始化调用连接池、服务中心
  */
-public class DarkbladeClientBootstrap implements InitializingBean {
+public class DarkbladeClientBootstrap implements ApplicationContextAware {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         logger.info("正在启动rpc客户端");
         startupNettyPool();
         startupServiceCenter();

@@ -13,5 +13,5 @@ import java.lang.annotation.Target;
 public @interface RpcService {
 
 //   this is an interface
-    Class<?> value();
+    Class<?> interfaceClass();
 }

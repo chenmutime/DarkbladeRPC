@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @EnableConfigurationProperties
 @ComponentScan(basePackages = {"com.darkblade.rpc.register"})
-public class RegisterAutoConfiguration {
+public class RegisterConfiguration {
 
 
 }

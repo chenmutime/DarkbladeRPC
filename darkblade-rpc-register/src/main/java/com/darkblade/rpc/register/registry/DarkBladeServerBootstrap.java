@@ -109,7 +109,7 @@ public class DarkBladeServerBootstrap extends RpcProperties implements Applicati
         Map<String, Object> beanMap = ctx.getBeansWithAnnotation(RpcService.class);
         try {
             for (Object obj : beanMap.values()) {
-                String interfaceName = obj.getClass().getAnnotation(RpcService.class).value().getSimpleName();
+                String interfaceName = obj.getClass().getAnnotation(RpcService.class).interfaceClass().getSimpleName();
                 if (ServerManager.getBeanMap().containsKey(interfaceName)) {
                     throw new Exception("Classes with duplicates：" + interfaceName);
                 }
