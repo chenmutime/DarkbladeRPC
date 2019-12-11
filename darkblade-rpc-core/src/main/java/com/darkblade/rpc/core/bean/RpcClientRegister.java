@@ -1,7 +1,7 @@
 package com.darkblade.rpc.core.bean;
 
 import com.darkblade.rpc.core.annotation.RpcClient;
-import com.darkblade.rpc.core.annotation.RpcClientsScan;
+import com.darkblade.rpc.core.annotation.RpcClientScan;
 import com.darkblade.rpc.core.invoker.ObjectProxy;
 import com.darkblade.rpc.core.invoker.ProxyBuidler;
 import org.slf4j.Logger;
@@ -45,13 +45,20 @@ public class RpcClientRegister implements ImportBeanDefinitionRegistrar, BeanFac
     @Override
     public void registerBeanDefinitions(AnnotationMetadata metadata, BeanDefinitionRegistry registry) {
         logger.info("正在扫描注解了RpcClient的类");
-        ClassPathScanningCandidateComponentProvider scanner = this.getScanner();
-        Map<String, Object> attrs = metadata.getAnnotationAttributes(RpcClientsScan.class.getName(), true);
-        String besePackage = (String) attrs.get("basePackage");
-//        添加只抓取注释了RpcClient的过滤器
+        Map<String, Object> attrs = metadata.getAnnotationAttributes(RpcClientScan.class.getName(), true);
+        String besePackage;
+        if (attrs.containsKey("basePackage") && !"".equals(attrs.get("basePackage"))) {
+            besePackage = (String) attrs.get("basePackage");
+        } else {
+            String applicationClassName = metadata.getClassName();
+            String ss = metadata.getEnclosingClassName();
+            besePackage = applicationClassName.replace("." + metadata.getClass().getSimpleName(), "");
+        }
+//        添加只抓取注解了@RpcClient的过滤器
         AnnotationTypeFilter annotationTypeFilter = new AnnotationTypeFilter(RpcClient.class);
+        ClassPathScanningCandidateComponentProvider scanner = this.getScanner();
         scanner.addIncludeFilter(annotationTypeFilter);
-//          抓取所有注解了@ComPonent的类
+//          抓取所有注解了@ComPonent的类，并过滤掉没有添加@RpcClient注解的类
         Set<BeanDefinition> candidateComponents = scanner.findCandidateComponents(besePackage);
         for (BeanDefinition beanDefinition : candidateComponents) {
             String beanClassName = beanDefinition.getBeanClassName();

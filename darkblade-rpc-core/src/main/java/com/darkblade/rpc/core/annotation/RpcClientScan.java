@@ -8,8 +8,8 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 @Documented
-public @interface RpcClientsScan {
+public @interface RpcClientScan {
 
-    String basePackage();
+    String basePackage() default "";
 
 }
