@@ -71,4 +71,4 @@ darkblade-register-zookeeper：实现了服务注册功能
 
 **结尾**
 一些设计思想模仿了feign。
-关于发送请求和zookeeper监听的部分功能抄了https://github.com/luxiaoxun/NettyRpc，以后如果有了更好的主意，再替换成自己的想法吧
+关于发送请求和zookeeper监听的部分功能抄了https://github.com/luxiaoxun/NettyRpc ，以后如果有了更好的主意，再替换成自己的东西吧
