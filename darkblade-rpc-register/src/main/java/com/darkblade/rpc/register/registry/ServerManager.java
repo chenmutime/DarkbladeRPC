@@ -18,7 +18,7 @@ public class ServerManager {
                 if (poolExecutor == null) {
                     int poolSzie = Runtime.getRuntime().availableProcessors();
                     poolExecutor = new ThreadPoolExecutor(poolSzie, poolSzie, 6000L
-                            , TimeUnit.SECONDS, new ArrayBlockingQueue<>(Integer.MAX_VALUE));
+                            , TimeUnit.SECONDS, new LinkedBlockingQueue<>());
                 }
             }
         }

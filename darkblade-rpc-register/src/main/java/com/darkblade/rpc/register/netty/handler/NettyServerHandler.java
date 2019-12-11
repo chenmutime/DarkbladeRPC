@@ -36,25 +36,25 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> 
                 filter.doFilter(rpcRequest);
             }
         }catch (RpcFilterException e){
-            RpcResponse RpcResponse = wrapResponse(StatusCodeConstant.TOO_MANY_REQUESTS, e.getMessage(), null, rpcRequest.getRequestId());
-            ctx.channel().writeAndFlush(RpcResponse);
+            RpcResponse rpcResponse = wrapResponse(StatusCodeConstant.TOO_MANY_REQUESTS, e.getMessage(), null, rpcRequest.getRequestId());
+            ctx.channel().writeAndFlush(rpcResponse);
         }
 
         ServerManager.submit(new Runnable() {
             @Override
             public void run() {
-                RpcResponse RpcResponse = new RpcResponse();
+                RpcResponse rpcResponse = new RpcResponse();
                 Channel channel = ctx.channel();
                 try {
-                    RpcResponse = handle(rpcRequest);
+                    rpcResponse = handle(rpcRequest);
                 } catch (InvocationTargetException e) {
                     logger.error("occur a exception:" + e);
-                    RpcResponse = wrapResponse(StatusCodeConstant.METHOD_NOT_EXIST, e.getCause().getMessage(), null, rpcRequest.getRequestId());
+                    rpcResponse = wrapResponse(StatusCodeConstant.METHOD_NOT_EXIST, e.getCause().getMessage(), null, rpcRequest.getRequestId());
                 } catch (Exception e) {
                     logger.error("occur a exception:" + e);
-                    RpcResponse = wrapResponse(StatusCodeConstant.UNKOWN, e.getCause().getMessage(), null, rpcRequest.getRequestId());
+                    rpcResponse = wrapResponse(StatusCodeConstant.UNKOWN, e.getCause().getMessage(), null, rpcRequest.getRequestId());
                 } finally {
-                    channel.writeAndFlush(RpcResponse);
+                    channel.writeAndFlush(rpcResponse);
                 }
             }
         });
@@ -73,7 +73,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> 
 
     private RpcResponse handle(RpcRequest RpcRequest) throws InvocationTargetException {
         logger.info("执行服务方法");
-        RpcResponse RpcResponse;
+        RpcResponse rpcResponse;
         if (!StringUtils.isEmpty(RpcRequest.getRequestId())) {
             Object bean = ServerManager.getBeanMap().get(RpcRequest.getCalssName());
             if (Objects.nonNull(bean)) {
@@ -81,25 +81,25 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> 
                 int methodIndex = serviceFastClass.getIndex(RpcRequest.getMethodName(), RpcRequest.getParameterTypes());
                 if (methodIndex >= 0) {
                     Object result = serviceFastClass.invoke(methodIndex, bean, RpcRequest.getParameters());
-                    RpcResponse = wrapResponse(StatusCodeConstant.SUCCESS, "", result, RpcRequest.getRequestId());
+                    rpcResponse = wrapResponse(StatusCodeConstant.SUCCESS, "", result, RpcRequest.getRequestId());
                 } else {
-                    RpcResponse = wrapResponse(StatusCodeConstant.METHOD_NOT_EXIST, "method is not exist", null, RpcRequest.getRequestId());
+                    rpcResponse = wrapResponse(StatusCodeConstant.METHOD_NOT_EXIST, "method is not exist", null, RpcRequest.getRequestId());
                 }
             } else {
-                RpcResponse = wrapResponse(StatusCodeConstant.SERVICE_NOT_EXIST, "service is not exist", null, RpcRequest.getRequestId());
+                rpcResponse = wrapResponse(StatusCodeConstant.SERVICE_NOT_EXIST, "service is not exist", null, RpcRequest.getRequestId());
             }
         } else {
-            RpcResponse = wrapResponse(StatusCodeConstant.REQUEST_ID_IS_NULL, "requestId is null", null, RpcRequest.getRequestId());
+            rpcResponse = wrapResponse(StatusCodeConstant.REQUEST_ID_IS_NULL, "requestId is null", null, RpcRequest.getRequestId());
         }
-        return RpcResponse;
+        return rpcResponse;
     }
 
     private RpcResponse wrapResponse(int code, String error, Object body, String requestId) {
-        RpcResponse response = new RpcResponse();
-        response.setRequestId(requestId);
-        response.setCode(code);
-        response.setBody(body);
-        response.setError(error);
-        return response;
+        RpcResponse rpcResponse = new RpcResponse();
+        rpcResponse.setRequestId(requestId);
+        rpcResponse.setCode(code);
+        rpcResponse.setBody(body);
+        rpcResponse.setError(error);
+        return rpcResponse;
     }
 }
