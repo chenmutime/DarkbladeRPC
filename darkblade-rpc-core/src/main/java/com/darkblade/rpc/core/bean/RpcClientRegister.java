@@ -44,11 +44,11 @@ public class RpcClientRegister implements ImportBeanDefinitionRegistrar, BeanFac
 
     @Override
     public void registerBeanDefinitions(AnnotationMetadata metadata, BeanDefinitionRegistry registry) {
-        logger.info("正在扫描注解了NrpcClient的类");
+        logger.info("正在扫描注解了RpcClient的类");
         ClassPathScanningCandidateComponentProvider scanner = this.getScanner();
         Map<String, Object> attrs = metadata.getAnnotationAttributes(RpcClientsScan.class.getName(), true);
         String besePackage = (String) attrs.get("basePackage");
-//        添加只抓取注释了NrpcClient的过滤器
+//        添加只抓取注释了RpcClient的过滤器
         AnnotationTypeFilter annotationTypeFilter = new AnnotationTypeFilter(RpcClient.class);
         scanner.addIncludeFilter(annotationTypeFilter);
 //          抓取所有注解了@ComPonent的类
@@ -56,19 +56,23 @@ public class RpcClientRegister implements ImportBeanDefinitionRegistrar, BeanFac
         for (BeanDefinition beanDefinition : candidateComponents) {
             String beanClassName = beanDefinition.getBeanClassName();
             try {
-//                接口类
-                Class interfaceClass = Class.forName(beanClassName);
+                Class beanClass = Class.forName(beanClassName);
+                Class<?>[] interfaces = beanClass.getInterfaces();
+                if (interfaces.length > 0) {
+                    Class interfaceClass = interfaces[0];
+                    RpcClient rpcClient = (RpcClient) beanClass.getAnnotation(RpcClient.class);
 //                生成代理类
-                Optional<Object> objectOptional = ProxyBuidler.build(interfaceClass);
-                if (objectOptional.isPresent()) {
-                    Object objectProxyClass = objectOptional.get();
-                    BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(objectProxyClass.getClass());
+                    Optional<Object> objectOptional = ProxyBuidler.build(interfaceClass, rpcClient);
+                    if (objectOptional.isPresent()) {
+                        Object objectProxyClass = objectOptional.get();
+                        BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(objectProxyClass.getClass());
 //                    由于代理类objectProxyClass需要构造传参，如果不传，注册bean将会失败
 //                    可能你会疑问，为什么beanDefinitionBuilder.addConstructorArgValue传入的参数是ObjectProxy而不是interfaceClass
 //                    那是因为objectProxyClass是一个代理类，并非ObjectProxy对象，其内部的构造参数类型就是InvocationHandler
-                    beanDefinitionBuilder.addConstructorArgValue(new ObjectProxy(interfaceClass));
-                    AbstractBeanDefinition proxyBeanDefinition = beanDefinitionBuilder.getBeanDefinition();
-                    beanFactory.registerBeanDefinition(beanClassName, proxyBeanDefinition);
+                        beanDefinitionBuilder.addConstructorArgValue(new ObjectProxy(interfaceClass, rpcClient));
+                        AbstractBeanDefinition proxyBeanDefinition = beanDefinitionBuilder.getBeanDefinition();
+                        beanFactory.registerBeanDefinition(beanClassName, proxyBeanDefinition);
+                    }
                 }
             } catch (ClassNotFoundException e) {
                 logger.error(e.getMessage());

@@ -21,26 +21,25 @@ public class ObjectProxy implements InvocationHandler {
 
     private Class<?> interfaceClass;
 
-    public ObjectProxy(Class<?> interfaceClass) {
+    private RpcClient rpcClient;
+
+    public ObjectProxy(Class<?> interfaceClass, RpcClient rpcClient) {
         this.interfaceClass = interfaceClass;
+        this.rpcClient = rpcClient;
     }
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        if (interfaceClass.isAnnotationPresent(RpcClient.class)) {
-            RpcClient annotation = interfaceClass.getAnnotation(RpcClient.class);
-            logger.info("执行同步发送请求:{}", annotation.serviceName());
-            RpcRequest nrpcRequest = wrapRequest(method, args);
-            RpcResponse nrpcResponse = executeRequest(1, annotation, nrpcRequest);
-            return nrpcResponse.getBody();
-        }
-        return null;
+        logger.info("执行同步发送请求:{}", rpcClient.serviceName());
+        RpcRequest nrpcRequest = wrapRequest(method, args);
+        RpcResponse nrpcResponse = executeRequest(1, rpcClient, nrpcRequest);
+        return nrpcResponse.getBody();
     }
 
     private RpcResponse executeRequest(int currRetries, RpcClient annotation, RpcRequest rpcRequest) throws Exception {
         int retries = annotation.retries();
         Optional<RpcContext> rpcFutureOptional = ServiceMetadataManager.sendRequest(annotation.serviceName(), rpcRequest);
-        if(rpcFutureOptional.isPresent()) {
+        if (rpcFutureOptional.isPresent()) {
             RpcContext rpcContext = rpcFutureOptional.get();
             RpcResponse response = rpcContext.get(annotation.timeout(), annotation.timeUnit());
             if (null == response) {
