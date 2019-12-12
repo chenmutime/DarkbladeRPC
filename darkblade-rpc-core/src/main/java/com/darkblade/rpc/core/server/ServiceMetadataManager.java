@@ -20,6 +20,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -115,7 +116,7 @@ public class ServiceMetadataManager {
         clearServer();
     }
 
-    private Optional<RpcContext> createRpcContext(String serviceName) throws Exception {
+    private Optional<RpcContext> createRpcContext(String serviceName) {
         readLock.lock();
         try {
             List<InetSocketAddress> serviceList = SOCKET_ADDRESS_CONCURRENT_MAP.get(serviceName);
@@ -128,6 +129,8 @@ public class ServiceMetadataManager {
                 RpcContext rpcContext = new RpcContext(serviceName, inetSocketAddress);
                 return Optional.of(rpcContext);
             }
+        } catch (RemoteServerException e) {
+            e.printStackTrace();
         } finally {
             readLock.unlock();
         }
@@ -144,7 +147,7 @@ public class ServiceMetadataManager {
         channelPool.release(channel);
     }
 
-    public static Optional<RpcContext> sendRequest(String serviceName, RpcRequest nrpcRequest) throws Exception {
+    public static Optional<RpcContext> sendRequest(String serviceName, RpcRequest nrpcRequest) {
         Optional<RpcContext> rpcFutureOptional = ServiceMetadataManager.getInstance().createRpcContext(serviceName);
         if (rpcFutureOptional.isPresent()) {
             RpcContext rpcContext = rpcFutureOptional.get();
@@ -152,18 +155,24 @@ public class ServiceMetadataManager {
 
             ChannelPool channelPool = getInstance().getChannelPool(rpcContext);
             Future<Channel> future = channelPool.acquire();
-            Channel channel = future.get();
-            if (null != channel) {
-                NettyClientHandler nettyClientHandler = channel.pipeline().get(NettyClientHandler.class);
-                nettyClientHandler.saveRpcFuture(nrpcRequest.getRequestId(), rpcContext);
-                ChannelFuture channelFuture = channel.writeAndFlush(nrpcRequest);
-                channelFuture.addListener(new GenericFutureListener<Future<? super Void>>() {
-                    @Override
-                    public void operationComplete(Future<? super Void> future) throws Exception {
-                        countDownLatch.countDown();
-                    }
-                });
-                countDownLatch.await();
+            try {
+                Channel channel = future.get();
+                if (null != channel) {
+                    NettyClientHandler nettyClientHandler = channel.pipeline().get(NettyClientHandler.class);
+                    nettyClientHandler.saveRpcFuture(nrpcRequest.getRequestId(), rpcContext);
+                    ChannelFuture channelFuture = channel.writeAndFlush(nrpcRequest);
+                    channelFuture.addListener(new GenericFutureListener<Future<? super Void>>() {
+                        @Override
+                        public void operationComplete(Future<? super Void> future) throws Exception {
+                            countDownLatch.countDown();
+                        }
+                    });
+                    countDownLatch.await();
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
             }
             return Optional.of(rpcContext);
         }

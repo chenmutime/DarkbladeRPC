@@ -6,6 +6,7 @@ import java.lang.annotation.*;
 import java.util.concurrent.TimeUnit;
 
 @Component
+@Inherited
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RpcClient {

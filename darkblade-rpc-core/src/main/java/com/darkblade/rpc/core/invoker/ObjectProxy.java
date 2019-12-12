@@ -7,17 +7,17 @@ import com.darkblade.rpc.core.annotation.RpcClient;
 import com.darkblade.rpc.core.server.ServiceMetadataManager;
 import com.darkblade.rpc.core.exception.RemoteServerException;
 import com.darkblade.rpc.core.context.RpcContext;
+import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.UUID;
 
 public class ObjectProxy implements InvocationHandler {
-
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private Class<?> interfaceClass;
 
@@ -29,33 +29,36 @@ public class ObjectProxy implements InvocationHandler {
     }
 
     @Override
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        logger.info("执行同步发送请求:{}", rpcClient.serviceName());
-        RpcRequest nrpcRequest = wrapRequest(method, args);
-        RpcResponse nrpcResponse = executeRequest(1, rpcClient, nrpcRequest);
-        return nrpcResponse.getBody();
+    public Object invoke(Object proxy, Method method, Object[] args) {
+        RpcRequest rpcRequest = this.wrapRequest(method, args);
+        Optional<RpcResponse> rpcResponseOptional = this.executeRequest(1, this.rpcClient, rpcRequest);
+        return rpcResponseOptional.isPresent() ? (rpcResponseOptional.get()).getBody() : null;
     }
 
-    private RpcResponse executeRequest(int currRetries, RpcClient annotation, RpcRequest rpcRequest) throws Exception {
+    private Optional<RpcResponse> executeRequest(int currRetries, RpcClient annotation, RpcRequest rpcRequest) {
         int retries = annotation.retries();
         Optional<RpcContext> rpcFutureOptional = ServiceMetadataManager.sendRequest(annotation.serviceName(), rpcRequest);
+        RpcResponse rpcResponse = null;
         if (rpcFutureOptional.isPresent()) {
             RpcContext rpcContext = rpcFutureOptional.get();
-            RpcResponse response = rpcContext.get(annotation.timeout(), annotation.timeUnit());
-            if (null == response) {
-                if (currRetries < retries) {
-                    logger.info("重试请求服务端");
-                    executeRequest(++currRetries, annotation, rpcRequest);
+            try {
+                rpcResponse = rpcContext.get(annotation.timeout(), annotation.timeUnit());
+                if (null == rpcResponse) {
+                    if (currRetries < retries) {
+                        executeRequest(++currRetries, annotation, rpcRequest);
+                    }
+                    throw new RemoteServerException("response is null");
                 }
-                throw new RemoteServerException("response is null");
+                if (StatusCodeConstant.SUCCESS != rpcResponse.getCode()) {
+                    throw new RemoteServerException(rpcResponse.getError());
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (RemoteServerException e) {
+                e.printStackTrace();
             }
-            if (StatusCodeConstant.SUCCESS != response.getCode()) {
-                logger.error(response.getError());
-                throw new RemoteServerException(response.getError());
-            }
-            return response;
         }
-        return null;
+        return Optional.ofNullable(rpcResponse);
     }
 
     private RpcRequest wrapRequest(Method method, Object[] args) {

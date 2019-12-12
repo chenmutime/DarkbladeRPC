@@ -1,12 +1,11 @@
-package com.darkblade.rpc.core.config;
+package com.darkblade.core.zookeeper.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
+
 @Data
-@Configuration
 @ConfigurationProperties(prefix = "darkblade.rpc.zookeeper")
-public class ZookeeperServerProperties extends ServerProperties {
+public class ZookeeperServerProperties {
 
     private String host = "localhost";
 

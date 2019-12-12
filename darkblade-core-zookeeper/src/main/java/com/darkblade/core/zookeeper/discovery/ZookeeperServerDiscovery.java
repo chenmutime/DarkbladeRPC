@@ -1,8 +1,7 @@
-package com.darkblade.core.zookeeper;
+package com.darkblade.core.zookeeper.discovery;
 
+import com.darkblade.core.zookeeper.config.ZookeeperServerProperties;
 import com.darkblade.rpc.common.constant.ZookeeperConstant;
-import com.darkblade.rpc.core.config.ServerProperties;
-import com.darkblade.rpc.core.config.ZookeeperServerProperties;
 import com.darkblade.rpc.core.discovery.ServerDiscovery;
 import com.darkblade.rpc.core.exception.RemoteServerException;
 import com.darkblade.rpc.core.server.ServiceMetadataManager;
@@ -17,7 +16,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ZkServerDiscovery implements ServerDiscovery {
+public class ZookeeperServerDiscovery implements ServerDiscovery {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -25,12 +24,16 @@ public class ZkServerDiscovery implements ServerDiscovery {
 
     private volatile ZooKeeper zooKeeper;
 
+    public ZookeeperServerDiscovery(ZookeeperServerProperties zookeeperServerProperties) {
+        this.zookeeperServerProperties = zookeeperServerProperties;
+    }
+
     @Override
-    public void startup(ServerProperties serverProperties) {
-        this.zookeeperServerProperties = (ZookeeperServerProperties) serverProperties;
+    public void startup() {
         this.zooKeeper = connectZookeeper();
         loadAllServices(this.zooKeeper);
     }
+
 
     @Override
     public List<String> serviceNames() {

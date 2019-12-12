@@ -51,8 +51,7 @@ public class RpcClientRegister implements ImportBeanDefinitionRegistrar, BeanFac
             besePackage = (String) attrs.get("basePackage");
         } else {
             String applicationClassName = metadata.getClassName();
-            String ss = metadata.getEnclosingClassName();
-            besePackage = applicationClassName.replace("." + metadata.getClass().getSimpleName(), "");
+            besePackage = applicationClassName.replace(applicationClassName.substring(applicationClassName.lastIndexOf(".")), "");
         }
 //        添加只抓取注解了@RpcClient的过滤器
         AnnotationTypeFilter annotationTypeFilter = new AnnotationTypeFilter(RpcClient.class);
