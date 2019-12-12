@@ -1,7 +1,7 @@
 package com.darkblade.rpc.register.annotation;
 
-import com.darkblade.rpc.register.config.RegisterConfiguration;
-import com.darkblade.rpc.register.registry.DarkBladeServerBootstrap;
+import com.darkblade.rpc.register.bootstrap.DarkBladeServerBootstrap;
+import com.darkblade.rpc.register.config.NettyProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
@@ -13,6 +13,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Configuration
-@Import({DarkBladeServerBootstrap.class, RegisterConfiguration.class})
+@Import({NettyProperties.class, DarkBladeServerBootstrap.class})
 public @interface EnableServerRegister {
 }

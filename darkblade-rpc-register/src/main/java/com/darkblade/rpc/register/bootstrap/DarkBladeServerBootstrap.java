@@ -1,15 +1,16 @@
-package com.darkblade.rpc.register.registry;
+package com.darkblade.rpc.register.bootstrap;
 
 import com.darkblade.rpc.common.dto.RpcRequest;
 import com.darkblade.rpc.common.dto.RpcResponse;
 import com.darkblade.rpc.common.serializer.RpcDecoder;
 import com.darkblade.rpc.common.serializer.RpcEncoder;
-import com.darkblade.rpc.common.util.SpiSupportUtil;
 import com.darkblade.rpc.register.annotation.RpcService;
-import com.darkblade.rpc.register.config.RpcProperties;
+import com.darkblade.rpc.register.config.NettyProperties;
 import com.darkblade.rpc.register.filter.RpcFilter;
 import com.darkblade.rpc.register.netty.handler.NettyServerHandler;
 import com.darkblade.rpc.register.limiter.RateLimiterHelper;
+import com.darkblade.rpc.register.registry.ServerManager;
+import com.darkblade.rpc.register.registry.ServerRegister;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -21,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.SystemPropertyUtils;
@@ -28,16 +30,16 @@ import org.springframework.util.SystemPropertyUtils;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class DarkBladeServerBootstrap extends RpcProperties implements ApplicationContextAware, InitializingBean {
+public class DarkBladeServerBootstrap extends NettyProperties implements ApplicationContextAware, InitializingBean {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private RpcProperties rpcProperties;
+    private NettyProperties nettyProperties;
     private List<RpcFilter> rpcFilterList;
 
-    public DarkBladeServerBootstrap(RpcProperties rpcProperties) {
-        this.rpcProperties = rpcProperties;
-        RateLimiterHelper.init(rpcProperties.getLimiter());
+    public DarkBladeServerBootstrap(NettyProperties nettyProperties) {
+        this.nettyProperties = nettyProperties;
+        RateLimiterHelper.init(nettyProperties.getLimiter());
     }
 
     @Override
@@ -52,22 +54,16 @@ public class DarkBladeServerBootstrap extends RpcProperties implements Applicati
         startupNettyServer();
     }
 
+    @Autowired
+    private ServerRegister serverRegister;
+
     /**
      * 向zookeeper注册自身
      */
     private synchronized void register() {
-        List<ServerRegister> serverRegisterList = new SpiSupportUtil().loadSPI(ServerRegister.class);
-        try {
-            if (serverRegisterList.isEmpty()) {
-                throw new Exception("you need to add a service register center");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        ServerRegister serverRegister = serverRegisterList.get(0);
-        String serviceName = rpcProperties.getServiceName();
-        String serviceAddress = serviceName + SystemPropertyUtils.VALUE_SEPARATOR + rpcProperties.getHost() + SystemPropertyUtils.VALUE_SEPARATOR + rpcProperties.getPort();
-        serverRegister.register(rpcProperties, serviceAddress);
+        String serviceName = nettyProperties.getServiceName();
+        String serviceAddress = serviceName + SystemPropertyUtils.VALUE_SEPARATOR + nettyProperties.getHost() + SystemPropertyUtils.VALUE_SEPARATOR + nettyProperties.getPort();
+        serverRegister.register(serviceAddress);
     }
 
     /**
@@ -110,7 +106,7 @@ public class DarkBladeServerBootstrap extends RpcProperties implements Applicati
         try {
             for (Object obj : beanMap.values()) {
                 Class<?>[] interfaces = obj.getClass().getInterfaces();
-                if(interfaces.length > 0) {
+                if (interfaces.length > 0) {
                     Class interfaceClass = interfaces[0];
                     String interfaceName = interfaceClass.getSimpleName();
                     if (ServerManager.getBeanMap().containsKey(interfaceName)) {
@@ -142,9 +138,9 @@ public class DarkBladeServerBootstrap extends RpcProperties implements Applicati
                     ch.pipeline().addLast(new NettyServerHandler(rpcFilterList));
                 }
             });
-            logger.info("binded port : {}", rpcProperties.getPort());
+            logger.info("binded port : {}", nettyProperties.getPort());
 //            同步绑定端口号
-            ChannelFuture future = bootstrap.bind(rpcProperties.getPort()).sync();
+            ChannelFuture future = bootstrap.bind(nettyProperties.getPort()).sync();
 
             future.channel().closeFuture().sync();
         } catch (InterruptedException e) {

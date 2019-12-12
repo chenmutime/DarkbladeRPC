@@ -1,25 +1,29 @@
-package com.darkblade.register;
+package com.darkblade.zookeeper.register;
 
 import com.darkblade.rpc.common.constant.ZookeeperConstant;
-import com.darkblade.rpc.register.config.RpcProperties;
-import com.darkblade.rpc.register.config.ZookeeperProperties;
 import com.darkblade.rpc.register.registry.ServerRegister;
+import com.darkblade.zookeeper.config.ZookeeperServerProperties;
 import org.apache.zookeeper.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-public class ZkServerRegister implements ServerRegister {
+public class ZookeeperServerRegister implements ServerRegister {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private RpcProperties rpcProperties;
+    private ZookeeperServerProperties zookeeperServerProperties;
 
+    public ZookeeperServerRegister(ZookeeperServerProperties zookeeperServerProperties) {
+        if (null == zookeeperServerProperties) {
+            zookeeperServerProperties = new ZookeeperServerProperties();
+        }
+        this.zookeeperServerProperties = zookeeperServerProperties;
+    }
 
     @Override
-    public void register(RpcProperties rpcProperties, String serviceAddress) {
-        this.rpcProperties = rpcProperties;
+    public void register(String serviceAddress) {
         ZooKeeper zookeeper = connectZookeeper();
         addRootNode(zookeeper);
         creatNode(zookeeper, serviceAddress);
@@ -28,11 +32,7 @@ public class ZkServerRegister implements ServerRegister {
     private ZooKeeper connectZookeeper() {
         ZooKeeper zookeeper = null;
         try {
-            ZookeeperProperties zookeeperProperties = rpcProperties.getZookeeper();
-            if (null == zookeeperProperties) {
-                zookeeperProperties = new ZookeeperProperties();
-            }
-            zookeeper = new ZooKeeper(zookeeperProperties.getHost(), 3000, new Watcher() {
+            zookeeper = new ZooKeeper(zookeeperServerProperties.getHost(), zookeeperServerProperties.getSessionTimeout(), new Watcher() {
                 @Override
                 public void process(WatchedEvent watchedEvent) {
                     logger.info("服务已建立");

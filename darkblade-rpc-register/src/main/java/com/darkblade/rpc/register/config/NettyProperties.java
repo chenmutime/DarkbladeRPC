@@ -5,9 +5,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 @Data
-@Configuration
-@ConfigurationProperties(prefix = "rpc.server")
-public class RpcProperties {
+@ConfigurationProperties(prefix = "darkblade.rpc.netty")
+public class NettyProperties {
 
     private double limiter = 500;
 
@@ -16,7 +15,5 @@ public class RpcProperties {
     private String host = "localhost";
 
     private String serviceName = "rpc-server";
-
-    private ZookeeperProperties zookeeper;
 
 }

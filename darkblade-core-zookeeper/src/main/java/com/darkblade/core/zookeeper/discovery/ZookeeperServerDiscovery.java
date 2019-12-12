@@ -25,6 +25,9 @@ public class ZookeeperServerDiscovery implements ServerDiscovery {
     private volatile ZooKeeper zooKeeper;
 
     public ZookeeperServerDiscovery(ZookeeperServerProperties zookeeperServerProperties) {
+        if (null == zookeeperServerProperties) {
+            zookeeperServerProperties = new ZookeeperServerProperties();
+        }
         this.zookeeperServerProperties = zookeeperServerProperties;
     }
 
