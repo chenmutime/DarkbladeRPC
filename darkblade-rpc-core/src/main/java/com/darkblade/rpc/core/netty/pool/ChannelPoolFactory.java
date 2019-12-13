@@ -1,7 +1,6 @@
 package com.darkblade.rpc.core.netty.pool;
 
 import com.darkblade.rpc.core.context.RpcContext;
-import com.darkblade.rpc.core.helper.ServiceMetadataManager;
 import io.netty.channel.Channel;
 import io.netty.channel.pool.AbstractChannelPoolMap;
 import io.netty.channel.pool.ChannelPool;

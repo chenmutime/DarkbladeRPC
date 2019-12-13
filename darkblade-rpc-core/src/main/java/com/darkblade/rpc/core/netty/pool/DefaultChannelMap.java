@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentMap;
 
 public class DefaultChannelMap extends AbstractChannelPoolMap<InetSocketAddress, ChannelPool> {
 
-    private final ConcurrentMap<InetSocketAddress, AbstractChannelPoolHandler> handlerMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<InetSocketAddress, AbstractChannelPoolHandler> channelPoolHandlerMap = new ConcurrentHashMap<>();
 
     private EventLoopGroup eventLoopGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors() << 1);
 
@@ -30,7 +30,7 @@ public class DefaultChannelMap extends AbstractChannelPoolMap<InetSocketAddress,
         bootstrap.option(ChannelOption.SO_RCVBUF, 1024);
         bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 1000);
 
-        AbstractChannelPoolHandler channelPoolHandler = handlerMap.get(inetAddr);
+        AbstractChannelPoolHandler channelPoolHandler = channelPoolHandlerMap.get(inetAddr);
         if(null == channelPoolHandler){
             channelPoolHandler = new DefaultChannelPoolHandler();
         }
