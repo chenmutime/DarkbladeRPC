@@ -4,7 +4,8 @@ import com.darkblade.core.zookeeper.config.ZookeeperServerProperties;
 import com.darkblade.rpc.common.constant.ZookeeperConstant;
 import com.darkblade.rpc.core.discovery.ServerDiscovery;
 import com.darkblade.rpc.core.exception.RemoteServerException;
-import com.darkblade.rpc.core.server.ServiceMetadataManager;
+import com.darkblade.rpc.core.helper.ServiceMetadataManager;
+import com.darkblade.rpc.core.netty.pool.ChannelPoolFactory;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
@@ -58,7 +59,7 @@ public class ZookeeperServerDiscovery implements ServerDiscovery {
         } catch (InterruptedException e) {
             this.logger.error(e.toString());
         }
-        ServiceMetadataManager.getInstance().destoryConnections();
+        ChannelPoolFactory.getInstance().destoryConnections();
     }
 
     /**
