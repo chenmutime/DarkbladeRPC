@@ -1,7 +1,6 @@
 package com.darkblade.rpc.core.netty.handler;
 
 import com.darkblade.rpc.common.dto.RpcResponse;
-import com.darkblade.rpc.core.helper.ServiceMetadataManager;
 import com.darkblade.rpc.core.context.RpcContext;
 import com.darkblade.rpc.core.netty.pool.ChannelPoolFactory;
 import io.netty.channel.ChannelHandlerContext;
@@ -15,11 +14,11 @@ import java.util.concurrent.ConcurrentMap;
 public class NettyClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-    //      临时存储RpcFuture，用于接收对应的响应。原本写在公共类里面，但怕出现内存泄漏
+//      临时存储RpcContext，用于接收对应的响应。原本写在公共类里面，但怕出现内存泄漏
     private ConcurrentMap<String, RpcContext> pending_queued = new ConcurrentHashMap<>();
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, RpcResponse rpcResponse) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, RpcResponse rpcResponse) {
         if (null != rpcResponse) {
             RpcContext rpcContext = pending_queued.get(rpcResponse.getRequestId());
             if (null != rpcContext) {
