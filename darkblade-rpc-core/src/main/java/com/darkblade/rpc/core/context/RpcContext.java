@@ -58,11 +58,21 @@ public class RpcContext implements Future<Object> {
         private final int done = 1;
         private final int pending = 0;
 
+        /**
+         * 当前线程尝试获取锁，没有获取到，会封装一个node扔到等待队列，之后会使用LockSupport.park使当前线程处于阻塞状态
+         * @param permits
+         * @return
+         */
         @Override
         protected boolean tryAcquire(int permits) {
             return getState() == done;
         }
 
+        /**
+         * 当前线程释放锁，会取得等待队列里的第一个node，即当前线程，使用LockSupport.unpark方法释放当前线程的阻塞状态
+         * @param permits
+         * @return
+         */
         @Override
         protected boolean tryRelease(int permits) {
             if (getState() == pending && compareAndSetState(pending, done)) {
