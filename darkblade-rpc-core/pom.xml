@@ -16,7 +16,6 @@
 
     <properties>
         <darkblade.rpc.common.version>1.0.0</darkblade.rpc.common.version>
-        <zookeeper.version>3.4.14</zookeeper.version>
     </properties>
 
     <dependencies>
@@ -24,11 +23,6 @@
             <groupId>com.darkblade.rpc</groupId>
             <artifactId>darkblade-rpc-common</artifactId>
             <version>${darkblade.rpc.common.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.zookeeper</groupId>
-            <artifactId>zookeeper</artifactId>
-            <version>${zookeeper.version}</version>
         </dependency>
     </dependencies>
 
