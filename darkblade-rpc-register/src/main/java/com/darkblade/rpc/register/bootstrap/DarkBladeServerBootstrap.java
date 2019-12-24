@@ -11,6 +11,7 @@ import com.darkblade.rpc.register.netty.handler.NettyServerHandler;
 import com.darkblade.rpc.register.limiter.RateLimiterHelper;
 import com.darkblade.rpc.register.registry.ServerManager;
 import com.darkblade.rpc.register.registry.ServerRegister;
+import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -51,7 +52,14 @@ public class DarkBladeServerBootstrap extends NettyProperties implements Applica
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        startupNettyServer();
+//        之所以单独开一个异步子线程，是因为future.channel().closeFuture().sync();这行代码会让主线程一直阻塞下去，导致http无法请求controller
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                startupNettyServer();
+            }
+        }).start();
+
     }
 
     @Autowired
@@ -121,11 +129,11 @@ public class DarkBladeServerBootstrap extends NettyProperties implements Applica
     }
 
     private void startupNettyServer() {
-        logger.info("starting server...");
+        logger.info("starting netty server...");
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         try {
-            io.netty.bootstrap.ServerBootstrap bootstrap = new io.netty.bootstrap.ServerBootstrap();
+            ServerBootstrap bootstrap = new ServerBootstrap();
             bootstrap.group(bossGroup, workerGroup);
             bootstrap.channel(NioServerSocketChannel.class);
             bootstrap.option(ChannelOption.SO_BACKLOG, 1024);
@@ -138,10 +146,10 @@ public class DarkBladeServerBootstrap extends NettyProperties implements Applica
                     ch.pipeline().addLast(new NettyServerHandler(rpcFilterList));
                 }
             });
-            logger.info("binded port : {}", nettyProperties.getPort());
-//            同步绑定端口号
+            logger.info("netty has bound a port : {}", nettyProperties.getPort());
+//            绑定端口号，等待服务器启动完毕，才会进入下行代码
             ChannelFuture future = bootstrap.bind(nettyProperties.getPort()).sync();
-
+//          阻塞，知直到服务端关闭socket
             future.channel().closeFuture().sync();
         } catch (InterruptedException e) {
             e.printStackTrace();
