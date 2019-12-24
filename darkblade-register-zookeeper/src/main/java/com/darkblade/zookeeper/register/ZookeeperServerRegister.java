@@ -68,7 +68,7 @@ public class ZookeeperServerRegister implements ServerRegister {
         try {
             logger.info("Initiating service node...");
             String path = zk.create(ZookeeperConstant.ZK_DATA_PATH, serviceAddress.getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
-            logger.info("create data node -> {}", path);
+            logger.info("registered server: {}", serviceAddress);
         } catch (KeeperException e) {
             logger.error(e.getMessage());
         } catch (InterruptedException e) {
