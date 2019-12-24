@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
 
 public class ZookeeperServerRegister implements ServerRegister {
 
@@ -31,13 +32,16 @@ public class ZookeeperServerRegister implements ServerRegister {
 
     private ZooKeeper connectZookeeper() {
         ZooKeeper zookeeper = null;
+        CountDownLatch countDownLatch = new CountDownLatch(1);
         try {
             zookeeper = new ZooKeeper(zookeeperServerProperties.getHost(), zookeeperServerProperties.getSessionTimeout(), new Watcher() {
                 @Override
                 public void process(WatchedEvent watchedEvent) {
                     logger.info("服务已建立");
+                    countDownLatch.countDown();
                 }
             });
+            countDownLatch.await();
         } catch (IOException e) {
             logger.error(e.getMessage());
         } catch (Exception e) {
