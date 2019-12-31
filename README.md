@@ -61,6 +61,7 @@ public interface TestClientService extends TestService {
 
 }
 ```
+
 @RpcClient表示这是一个服务调用入口，serviceName表示服务名称，该名称默认是rpc-server，如果服务端变了，这里也需要做出相应变更，建议写在application.yml。注意，这里也继承了一个TestService，由于这个接口是定义在一个公共的模块，因此客户端和服务端都需要引入这同一个模块。
 
 **服务注册与发现中心**  
@@ -72,3 +73,6 @@ darkblade-register-zookeeper：实现了服务注册功能
 **结尾**  
 一些设计思想模仿了feign。
 关于发送请求和zookeeper监听的部分功能抄了https://github.com/luxiaoxun/NettyRpc ，以后如果有了更好的主意，再替换成自己的东西吧
+
+**客户端启动时UML图**
+![客户端启动时UML图](https://cmtimeoss.oss-cn-shanghai.aliyuncs.com/DarkBladeRPC%E5%AE%A2%E6%88%B7%E7%AB%AFUML.jpg)
